@@ -28,9 +28,16 @@
     "seed": "tsx prisma/seed.ts"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-    "*.{json,md,css}": ["prettier --write"],
-    "*.prisma": ["prisma format"]
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ],
+    "*.prisma": [
+      "prisma format"
+    ]
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
