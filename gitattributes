@@ -1,0 +1,12 @@
+# Normaliza los finales de línea a LF para todo el proyecto.
+# Sin esto, Windows guarda CRLF y Prettier/CI (que corre en Linux) lo marca como error de formato.
+* text=auto eol=lf
+
+# Los binarios no se tocan
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
