@@ -312,8 +312,7 @@ const settings = [
     group: 'sobre-nosotros',
     value: {
       title: '¿Quiénes somos?',
-      body:
-        'Somos un emprendimiento familiar dedicado a la sublimación. Empezamos personalizando tazas para amigos y hoy acompañamos a personas y empresas que quieren regalar algo con significado.',
+      body: 'Somos un emprendimiento familiar dedicado a la sublimación. Empezamos personalizando tazas para amigos y hoy acompañamos a personas y empresas que quieren regalar algo con significado.',
     },
   },
 ];
@@ -493,7 +492,9 @@ async function main() {
       create: s,
     });
   }
-  console.log(`  ${faqs.length} FAQ, ${testimonials.length} testimonios, ${settings.length} ajustes`);
+  console.log(
+    `  ${faqs.length} FAQ, ${testimonials.length} testimonios, ${settings.length} ajustes`,
+  );
 
   console.log('Listo.');
 }

@@ -28,16 +28,16 @@ Un catálogo digital público con filtrado por características, más un panel p
 
 ## Stack
 
-| Capa | Tecnología |
-|---|---|
-| Framework | Next.js 16 (App Router) · TypeScript |
-| Estilos | Tailwind CSS · shadcn/ui |
-| Base de datos | PostgreSQL (Neon) · Prisma ORM |
-| Autenticación | Auth.js v5 |
-| Imágenes | Cloudinary |
-| Validación | Zod · React Hook Form |
-| Calidad | ESLint · Prettier · Husky · Vitest · Playwright |
-| Despliegue | Vercel · GitHub Actions |
+| Capa          | Tecnología                                      |
+| ------------- | ----------------------------------------------- |
+| Framework     | Next.js 16 (App Router) · TypeScript            |
+| Estilos       | Tailwind CSS · shadcn/ui                        |
+| Base de datos | PostgreSQL (Neon) · Prisma ORM                  |
+| Autenticación | Auth.js v5                                      |
+| Imágenes      | Cloudinary                                      |
+| Validación    | Zod · React Hook Form                           |
+| Calidad       | ESLint · Prettier · Husky · Vitest · Playwright |
+| Despliegue    | Vercel · GitHub Actions                         |
 
 ## Arquitectura
 
@@ -109,13 +109,13 @@ El sitio queda en `http://localhost:3000` y el panel en `/admin`. Las credencial
 
 Todas están descritas en [`.env.example`](.env.example). Las imprescindibles:
 
-| Variable | Descripción |
-|---|---|
-| `DATABASE_URL` | Cadena de conexión a PostgreSQL |
-| `DIRECT_URL` | Conexión sin pooling, requerida por las migraciones |
-| `AUTH_SECRET` | Secreto de sesión (`openssl rand -base64 32`) |
-| `CLOUDINARY_*` | Credenciales de almacenamiento de imágenes |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número en formato internacional sin `+` |
+| Variable                      | Descripción                                         |
+| ----------------------------- | --------------------------------------------------- |
+| `DATABASE_URL`                | Cadena de conexión a PostgreSQL                     |
+| `DIRECT_URL`                  | Conexión sin pooling, requerida por las migraciones |
+| `AUTH_SECRET`                 | Secreto de sesión (`openssl rand -base64 32`)       |
+| `CLOUDINARY_*`                | Credenciales de almacenamiento de imágenes          |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número en formato internacional sin `+`             |
 
 ## Scripts
 

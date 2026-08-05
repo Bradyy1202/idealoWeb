@@ -18,7 +18,7 @@ El código se organiza por dominio en `src/modules/`, no por tipo de archivo. Ca
 
 ## Modelo de datos
 
-La decisión central: las categorías forman un árbol de máximo dos niveles que responde a *qué es* el producto (Botellas, Tazas, Textiles → Camisetas). Las características transversales —material, capacidad, uso, color, talla— son **atributos**, no subcategorías, porque se combinan libremente.
+La decisión central: las categorías forman un árbol de máximo dos niveles que responde a _qué es_ el producto (Botellas, Tazas, Textiles → Camisetas). Las características transversales —material, capacidad, uso, color, talla— son **atributos**, no subcategorías, porque se combinan libremente.
 
 Nunca crees una subcategoría llamada "Térmicas" o "De acero inoxidable". Eso es un `AttributeValue`. Ver `docs/adr/0001-categorias-vs-atributos.md`.
 
@@ -31,10 +31,10 @@ Valores del mismo atributo se combinan con OR; atributos distintos con AND. "Ace
 ```ts
 AND: Object.values(filtrosPorAtributo).map((valueIds) => ({
   attributeValues: { some: { attributeValueId: { in: valueIds } } },
-}))
+}));
 ```
 
-Aplanar todos los valores en un solo `some` es el error clásico: devuelve productos que cumplen *cualquiera* de los filtros. Si tocás esta consulta, agregá un test.
+Aplanar todos los valores en un solo `some` es el error clásico: devuelve productos que cumplen _cualquiera_ de los filtros. Si tocás esta consulta, agregá un test.
 
 El estado de los filtros vive en la URL como query params, nunca solo en `useState`. El usuario debe poder compartir un enlace filtrado.
 
