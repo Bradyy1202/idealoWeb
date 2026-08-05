@@ -1,14 +1,12 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTypescript from 'eslint-config-next/typescript';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
-
-export default [
-  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTypescript,
+  eslintConfigPrettier,
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
@@ -20,11 +18,11 @@ export default [
     },
   },
   {
-    // El seed sí puede escribir en consola
+    // El seed si puede escribir en consola
     files: ['prisma/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
-  {
-    ignores: ['.next/**', 'node_modules/**', 'src/generated/**'],
-  },
-];
+  globalIgnores(['.next/**', 'node_modules/**', 'src/generated/**']),
+]);
+
+export default eslintConfig;
