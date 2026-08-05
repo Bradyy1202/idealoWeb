@@ -1,0 +1,359 @@
+// ---------------------------------------------------------------------------
+// Catálogo digital de sublimación
+// Modelo de datos preparado para evolucionar hacia e-commerce sin reconstruir.
+//
+// Decisión clave: las categorías forman un árbol POCO PROFUNDO (Botellas, Tazas,
+// Textiles...) y las características transversales (material, capacidad, uso,
+// color) se modelan como ATRIBUTOS. Un producto puede ser "térmica" + "acero
+// inoxidable" + "deportiva" al mismo tiempo sin duplicarse.
+// Ver docs/adr/0001-categorias-vs-atributos.md
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum AttributeType {
+  TEXT
+  COLOR
+  NUMBER
+  BOOLEAN
+}
+
+enum InquirySource {
+  WHATSAPP_PRODUCT // botón dentro de la ficha de producto
+  WHATSAPP_FLOAT // botón flotante global
+  QUOTE_LIST // lista de cotización con varios productos
+  CONTACT_FORM // formulario de la sección Contacto
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  LOST
+}
+
+// ---------------------------------------------------------------------------
+// Módulo: autenticación
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         Role     @default(ADMIN)
+  isActive     Boolean  @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Módulo: categorías
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  imageUrl    String? @map("image_url")
+  imageId     String? @map("image_id") // public_id de Cloudinary
+
+  // Árbol autorreferencial. Máximo 2 niveles por decisión de diseño.
+  parentId String?    @map("parent_id")
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  // SEO
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description")
+
+  products   Product[]
+  attributes CategoryAttribute[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+  @@map("categories")
+}
+
+// Define qué atributos se muestran como filtro en cada categoría.
+// Sin esto mostrarías "capacidad en ml" al filtrar camisetas.
+model CategoryAttribute {
+  categoryId  String @map("category_id")
+  attributeId String @map("attribute_id")
+  sortOrder   Int    @default(0) @map("sort_order")
+
+  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, attributeId])
+  @@map("category_attributes")
+}
+
+// ---------------------------------------------------------------------------
+// Módulo: atributos (facetas de filtrado)
+// ---------------------------------------------------------------------------
+
+model Attribute {
+  id           String        @id @default(cuid())
+  name         String // "Material", "Capacidad", "Uso"
+  slug         String        @unique // "material", "capacidad", "uso"
+  type         AttributeType @default(TEXT)
+  unit         String? // "ml", "oz", "cm"
+  isFilterable Boolean       @default(true) @map("is_filterable")
+  sortOrder    Int           @default(0) @map("sort_order")
+
+  values     AttributeValue[]
+  categories CategoryAttribute[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id          String  @id @default(cuid())
+  attributeId String  @map("attribute_id")
+  value       String // "Acero inoxidable", "500", "Térmica"
+  slug        String // "acero-inoxidable", "500", "termica"
+  hexColor    String? @map("hex_color") // solo para atributos tipo COLOR
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  attribute Attribute               @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  products  ProductAttributeValue[]
+
+  @@unique([attributeId, slug])
+  @@index([attributeId, sortOrder])
+  @@map("attribute_values")
+}
+
+// ---------------------------------------------------------------------------
+// Módulo: productos
+// ---------------------------------------------------------------------------
+
+model Product {
+  id               String  @id @default(cuid())
+  name             String
+  slug             String  @unique
+  sku              String? @unique
+  shortDescription String? @map("short_description") // se muestra en la tarjeta
+  description      String? // ficha completa, admite Markdown
+
+  // Precio referencial. No hay compra en línea: sirve como "desde ₡X"
+  // y se vuelve el precio real cuando llegue el carrito.
+  basePrice    Decimal? @map("base_price") @db.Decimal(10, 2)
+  priceIsFrom  Boolean  @default(true) @map("price_is_from")
+  currency     String   @default("CRC")
+
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  isActive   Boolean @default(true) @map("is_active")
+  isFeatured Boolean @default(false) @map("is_featured")
+  sortOrder  Int     @default(0) @map("sort_order")
+  viewCount  Int     @default(0) @map("view_count")
+
+  // Notas de personalización específicas de sublimación
+  customizationNotes String? @map("customization_notes")
+  minOrderQuantity   Int     @default(1) @map("min_order_quantity")
+
+  // SEO
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description")
+
+  images          ProductImage[]
+  attributeValues ProductAttributeValue[]
+  galleryItems    GalleryItem[]
+  inquiryItems    InquiryItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([categoryId, isActive])
+  @@index([isFeatured, isActive])
+  @@index([isActive, sortOrder])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String  @map("product_id")
+  url       String
+  imageId   String? @map("image_id") // public_id de Cloudinary, necesario para borrar
+  alt       String?
+  width     Int?
+  height    Int?
+  blurHash  String? @map("blur_hash") // placeholder mientras carga
+  sortOrder Int     @default(0) @map("sort_order")
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([productId, sortOrder])
+  @@map("product_images")
+}
+
+model ProductAttributeValue {
+  productId        String @map("product_id")
+  attributeValueId String @map("attribute_value_id")
+
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+
+  @@id([productId, attributeValueId])
+  @@index([attributeValueId])
+  @@map("product_attribute_values")
+}
+
+// ---------------------------------------------------------------------------
+// Módulo: pedidos / consultas
+// Hoy registra intenciones de contacto. Mañana es la tabla de órdenes.
+// ---------------------------------------------------------------------------
+
+model Inquiry {
+  id       String        @id @default(cuid())
+  source   InquirySource
+  status   InquiryStatus @default(NEW)
+
+  customerName  String? @map("customer_name")
+  customerPhone String? @map("customer_phone")
+  customerEmail String? @map("customer_email")
+  message       String?
+
+  // Trazabilidad de marketing sin cookies de terceros
+  referrer  String?
+  userAgent String? @map("user_agent")
+
+  adminNotes String?   @map("admin_notes")
+  contactedAt DateTime? @map("contacted_at")
+
+  items InquiryItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([source])
+  @@map("inquiries")
+}
+
+model InquiryItem {
+  id        String @id @default(cuid())
+  inquiryId String @map("inquiry_id")
+
+  // El producto puede borrarse después; guardamos una copia del nombre
+  // para que el historial no se corrompa.
+  productId       String? @map("product_id")
+  productSnapshot String  @map("product_snapshot")
+
+  quantity Int     @default(1)
+  notes    String?
+
+  inquiry Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([inquiryId])
+  @@index([productId])
+  @@map("inquiry_items")
+}
+
+// ---------------------------------------------------------------------------
+// Módulo: contenido editable
+// ---------------------------------------------------------------------------
+
+model FaqItem {
+  id        String  @id @default(cuid())
+  question  String
+  answer    String
+  category  String? // "Pedidos", "Envíos", "Personalización"
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("faq_items")
+}
+
+model Testimonial {
+  id             String  @id @default(cuid())
+  authorName     String  @map("author_name")
+  authorLocation String? @map("author_location")
+  content        String
+  rating         Int? // 1-5
+  avatarUrl      String? @map("avatar_url")
+  isActive       Boolean @default(true) @map("is_active")
+  isFeatured     Boolean @default(false) @map("is_featured")
+  sortOrder      Int     @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("testimonials")
+}
+
+model GalleryItem {
+  id          String  @id @default(cuid())
+  title       String?
+  description String?
+  imageUrl    String  @map("image_url")
+  imageId     String? @map("image_id")
+  blurHash    String? @map("blur_hash")
+
+  // Enlace opcional al producto usado en ese trabajo
+  productId String?  @map("product_id")
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("gallery_items")
+}
+
+// Configuración general: teléfono de WhatsApp, textos del hero, horarios,
+// redes sociales. Guardado como Json para no migrar la base cada vez
+// que se agrega un campo de contenido.
+model SiteSetting {
+  key       String   @id
+  value     Json
+  group     String   @default("general") // "contacto", "hero", "sobre-nosotros"
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([group])
+  @@map("site_settings")
+}
