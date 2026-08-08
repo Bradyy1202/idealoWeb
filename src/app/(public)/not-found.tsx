@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { contact } from '@/shared/data/mock/site';
-import { buildWhatsAppUrl } from '@/shared/lib/format-price';
+import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { buttonVariants } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { contact, hero } from '@/shared/data/mock/site';
-import { buildWhatsAppUrl } from '@/shared/lib/format-price';
+import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Button } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
 import { Logo } from '@/shared/ui/logo';

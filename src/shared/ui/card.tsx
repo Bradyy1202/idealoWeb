@@ -1,5 +1,6 @@
 import { contact, type Product } from '@/shared/data/mock/site';
-import { formatPrice, buildWhatsAppUrl } from '@/shared/lib/format-price';
+import { formatPrice } from '@/shared/lib/format-price';
+import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Badge } from './badge';
 
 /**

@@ -8,8 +8,3 @@ const formatter = new Intl.NumberFormat('es-CR', {
 export function formatPrice(value: number) {
   return formatter.format(value);
 }
-
-/** Mensaje pre-armado para WhatsApp. `buildWhatsAppUrl()` lo formaliza en la tarea 3.1. */
-export function buildWhatsAppUrl(phone: string, message: string) {
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-}
