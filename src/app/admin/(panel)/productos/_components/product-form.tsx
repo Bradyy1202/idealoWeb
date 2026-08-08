@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useRef, useState, useTransition, type KeyboardEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   createProductAction,
   updateProductAction,
@@ -8,6 +9,7 @@ import {
 } from '@/modules/products/actions';
 import type { ProductFormValues } from '@/modules/products/service';
 import type { CategoryAdminItem } from '@/modules/categories/service';
+import { submitOnEnter } from '@/shared/lib/submit-on-enter';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -27,11 +29,11 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function ProductForm({ categories, initialValues }: ProductFormProps) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const isEditing = Boolean(initialValues);
-  const action = initialValues
-    ? updateProductAction.bind(null, initialValues.id)
-    : createProductAction;
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [state, setState] = useState<ProductFormState>(initialState);
+  const [isPending, startTransition] = useTransition();
 
   const [categoryId, setCategoryId] = useState(
     initialValues?.categoryId ?? categories[0]?.id ?? '',
@@ -51,8 +53,45 @@ export function ProductForm({ categories, initialValues }: ProductFormProps) {
     });
   }
 
+  function handleSubmit() {
+    if (!formRef.current) return;
+    const formData = new FormData(formRef.current);
+    const input = {
+      name: formData.get('name'),
+      slug: formData.get('slug'),
+      sku: formData.get('sku'),
+      shortDescription: formData.get('shortDescription'),
+      description: formData.get('description'),
+      basePrice: formData.get('basePrice'),
+      priceIsFrom: formData.get('priceIsFrom'),
+      currency: formData.get('currency'),
+      categoryId: formData.get('categoryId'),
+      isActive: formData.get('isActive'),
+      isFeatured: formData.get('isFeatured'),
+      sortOrder: formData.get('sortOrder'),
+      customizationNotes: formData.get('customizationNotes'),
+      minOrderQuantity: formData.get('minOrderQuantity'),
+      metaTitle: formData.get('metaTitle'),
+      metaDescription: formData.get('metaDescription'),
+      attributeValueIds: formData.getAll('attributeValueIds'),
+    };
+    startTransition(async () => {
+      const result = initialValues
+        ? await updateProductAction(initialValues.id, input)
+        : await createProductAction(input);
+      setState(result);
+      if (result.status === 'success' && result.redirectTo) {
+        router.push(result.redirectTo);
+      }
+    });
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    submitOnEnter(event, handleSubmit);
+  }
+
   return (
-    <form action={formAction} className="flex flex-col gap-8">
+    <form ref={formRef} onKeyDown={handleKeyDown} className="flex flex-col gap-8">
       <input type="hidden" name="currency" value={initialValues?.currency ?? 'CRC'} />
 
       <section className="grid gap-4 sm:grid-cols-2">
@@ -270,7 +309,7 @@ export function ProductForm({ categories, initialValues }: ProductFormProps) {
       ) : null}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" className="rounded-full" disabled={isPending}>
+        <Button type="button" onClick={handleSubmit} className="rounded-full" disabled={isPending}>
           {isPending ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear producto'}
         </Button>
       </div>

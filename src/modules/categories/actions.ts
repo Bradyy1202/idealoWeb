@@ -1,7 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import {
   createCategoryFromInput,
@@ -11,24 +10,23 @@ import {
 } from './service';
 
 export type CategoryFormState = {
-  status: 'idle' | 'error';
+  status: 'idle' | 'error' | 'success';
   message?: string;
   fieldErrors?: Record<string, string>;
+  redirectTo?: string;
 };
 
-function parseCategoryFormData(formData: FormData) {
-  return {
-    name: formData.get('name'),
-    slug: formData.get('slug'),
-    description: formData.get('description'),
-    parentId: formData.get('parentId') || undefined,
-    sortOrder: formData.get('sortOrder'),
-    isActive: formData.get('isActive'),
-    metaTitle: formData.get('metaTitle'),
-    metaDescription: formData.get('metaDescription'),
-    attributeIds: formData.getAll('attributeIds'),
-  };
-}
+export type CategoryFormInput = {
+  name: FormDataEntryValue | null;
+  slug: FormDataEntryValue | null;
+  description: FormDataEntryValue | null;
+  parentId: FormDataEntryValue | null | undefined;
+  sortOrder: FormDataEntryValue | null;
+  isActive: FormDataEntryValue | null;
+  metaTitle: FormDataEntryValue | null;
+  metaDescription: FormDataEntryValue | null;
+  attributeIds: FormDataEntryValue[];
+};
 
 function isDuplicateSlugError(error: unknown): boolean {
   return (
@@ -52,12 +50,19 @@ function extractZodFieldErrors(error: unknown): Record<string, string> | null {
   return fieldErrors;
 }
 
-export async function createCategoryAction(
-  _prevState: CategoryFormState,
-  formData: FormData,
-): Promise<CategoryFormState> {
+// Las acciones de crear/editar las llama el formulario desde un botón
+// type="button" (no type="submit" dentro de un <form>): en este entorno, un
+// type="submit" dentro de un <form> dispara el mecanismo de "envío de
+// formulario" de Next.js para Server Actions, pensado para degradar sin JS,
+// incluso si el propio <form> no tiene `action`. Ese mecanismo intenta
+// preparar una respuesta de navegación completa dentro del mismo request, y
+// esa segunda pasada pierde la cookie de sesión (el middleware la ve como no
+// autenticada y la Server Action nunca llega a ejecutarse). El formulario
+// arma un objeto plano a partir del FormData y navega con router.push().
+
+export async function createCategoryAction(input: CategoryFormInput): Promise<CategoryFormState> {
   try {
-    await createCategoryFromInput(parseCategoryFormData(formData));
+    await createCategoryFromInput(input);
   } catch (error) {
     if (isDuplicateSlugError(error)) {
       return { status: 'error', fieldErrors: { slug: 'Ya existe una categoría con ese slug.' } };
@@ -73,16 +78,15 @@ export async function createCategoryAction(
 
   revalidatePath('/admin/categorias');
   revalidatePath('/catalogo');
-  redirect('/admin/categorias');
+  return { status: 'success', redirectTo: '/admin/categorias' };
 }
 
 export async function updateCategoryAction(
   id: string,
-  _prevState: CategoryFormState,
-  formData: FormData,
+  input: CategoryFormInput,
 ): Promise<CategoryFormState> {
   try {
-    await updateCategoryFromInput(id, parseCategoryFormData(formData));
+    await updateCategoryFromInput(id, input);
   } catch (error) {
     if (isDuplicateSlugError(error)) {
       return { status: 'error', fieldErrors: { slug: 'Ya existe una categoría con ese slug.' } };
@@ -98,7 +102,7 @@ export async function updateCategoryAction(
 
   revalidatePath('/admin/categorias');
   revalidatePath('/catalogo');
-  redirect('/admin/categorias');
+  return { status: 'success', redirectTo: '/admin/categorias' };
 }
 
 export async function deleteCategoryAction(id: string): Promise<{ ok: boolean; message?: string }> {

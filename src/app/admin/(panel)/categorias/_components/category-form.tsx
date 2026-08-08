@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useRef, useState, useTransition, type KeyboardEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   createCategoryAction,
   updateCategoryAction,
@@ -8,6 +9,7 @@ import {
 } from '@/modules/categories/actions';
 import type { CategoryAdminItem } from '@/modules/categories/service';
 import type { AttributeAdminItem } from '@/modules/attributes/service';
+import { submitOnEnter } from '@/shared/lib/submit-on-enter';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -22,10 +24,10 @@ type CategoryFormProps = {
 };
 
 export function CategoryForm({ categories, attributes, initialValues }: CategoryFormProps) {
-  const action = initialValues
-    ? updateCategoryAction.bind(null, initialValues.id)
-    : createCategoryAction;
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, setState] = useState<CategoryFormState>(initialState);
+  const [isPending, startTransition] = useTransition();
 
   // Solo categorías raíz pueden ser padre (árbol de máximo 2 niveles), y una
   // categoría nunca puede ser su propia padre.
@@ -37,8 +39,37 @@ export function CategoryForm({ categories, attributes, initialValues }: Category
     initialValues?.filterableAttributes.map((attribute) => attribute.id) ?? [],
   );
 
+  function handleSubmit() {
+    if (!formRef.current) return;
+    const formData = new FormData(formRef.current);
+    const input = {
+      name: formData.get('name'),
+      slug: formData.get('slug'),
+      description: formData.get('description'),
+      parentId: formData.get('parentId') || undefined,
+      sortOrder: formData.get('sortOrder'),
+      isActive: formData.get('isActive'),
+      metaTitle: formData.get('metaTitle'),
+      metaDescription: formData.get('metaDescription'),
+      attributeIds: formData.getAll('attributeIds'),
+    };
+    startTransition(async () => {
+      const result = initialValues
+        ? await updateCategoryAction(initialValues.id, input)
+        : await createCategoryAction(input);
+      setState(result);
+      if (result.status === 'success' && result.redirectTo) {
+        router.push(result.redirectTo);
+      }
+    });
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    submitOnEnter(event, handleSubmit);
+  }
+
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form ref={formRef} onKeyDown={handleKeyDown} className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre</Label>
@@ -172,7 +203,7 @@ export function CategoryForm({ categories, attributes, initialValues }: Category
       ) : null}
 
       <div>
-        <Button type="submit" className="rounded-full" disabled={isPending}>
+        <Button type="button" onClick={handleSubmit} className="rounded-full" disabled={isPending}>
           {isPending ? 'Guardando...' : initialValues ? 'Guardar cambios' : 'Crear categoría'}
         </Button>
       </div>

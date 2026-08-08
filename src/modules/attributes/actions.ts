@@ -1,7 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import {
   createAttributeFromInput,
@@ -12,21 +11,20 @@ import {
 } from './service';
 
 export type AttributeFormState = {
-  status: 'idle' | 'error';
+  status: 'idle' | 'error' | 'success';
   message?: string;
   fieldErrors?: Record<string, string>;
+  redirectTo?: string;
 };
 
-function parseAttributeFormData(formData: FormData) {
-  return {
-    name: formData.get('name'),
-    slug: formData.get('slug'),
-    type: formData.get('type'),
-    unit: formData.get('unit'),
-    isFilterable: formData.get('isFilterable'),
-    sortOrder: formData.get('sortOrder'),
-  };
-}
+export type AttributeFormInput = {
+  name: FormDataEntryValue | null;
+  slug: FormDataEntryValue | null;
+  type: FormDataEntryValue | null;
+  unit: FormDataEntryValue | null;
+  isFilterable: FormDataEntryValue | null;
+  sortOrder: FormDataEntryValue | null;
+};
 
 function isDuplicateSlugError(error: unknown): boolean {
   return (
@@ -50,12 +48,24 @@ function extractZodFieldErrors(error: unknown): Record<string, string> | null {
   return fieldErrors;
 }
 
+// createAttributeAction/updateAttributeAction las llama el formulario desde
+// un botón type="button" (no type="submit" dentro de un <form>): en este
+// entorno, un <button type="submit"> dentro de un <form> dispara el
+// mecanismo de "envío de formulario" de Next.js para Server Actions —
+// pensado para degradar sin JS — incluso si el propio <form> no tiene
+// `action` y el envío se maneja aparte. Ese mecanismo intenta preparar una
+// respuesta de navegación completa dentro del mismo request, y esa segunda
+// pasada pierde la cookie de sesión (el middleware la ve como no autenticada
+// y la Server Action nunca llega a ejecutarse). Con type="button" la acción
+// se invoca como una llamada de función común y corriente. El formulario
+// arma un objeto plano a partir del FormData antes de llamar a la acción, y
+// navega con router.push() al terminar.
+
 export async function createAttributeAction(
-  _prevState: AttributeFormState,
-  formData: FormData,
+  input: AttributeFormInput,
 ): Promise<AttributeFormState> {
   try {
-    await createAttributeFromInput(parseAttributeFormData(formData));
+    await createAttributeFromInput(input);
   } catch (error) {
     if (isDuplicateSlugError(error)) {
       return { status: 'error', fieldErrors: { slug: 'Ya existe un atributo con ese slug.' } };
@@ -67,16 +77,15 @@ export async function createAttributeAction(
   }
 
   revalidatePath('/admin/atributos');
-  redirect('/admin/atributos');
+  return { status: 'success', redirectTo: '/admin/atributos' };
 }
 
 export async function updateAttributeAction(
   id: string,
-  _prevState: AttributeFormState,
-  formData: FormData,
+  input: AttributeFormInput,
 ): Promise<AttributeFormState> {
   try {
-    await updateAttributeFromInput(id, parseAttributeFormData(formData));
+    await updateAttributeFromInput(id, input);
   } catch (error) {
     if (isDuplicateSlugError(error)) {
       return { status: 'error', fieldErrors: { slug: 'Ya existe un atributo con ese slug.' } };
@@ -89,7 +98,7 @@ export async function updateAttributeAction(
 
   revalidatePath('/admin/atributos');
   revalidatePath('/admin/categorias');
-  redirect('/admin/atributos');
+  return { status: 'success', redirectTo: '/admin/atributos' };
 }
 
 export async function deleteAttributeAction(

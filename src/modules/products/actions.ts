@@ -1,7 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import {
   createProduct,
@@ -16,32 +15,31 @@ import {
 import type { AddProductImageInput } from './schema';
 
 export type ProductFormState = {
-  status: 'idle' | 'error';
+  status: 'idle' | 'error' | 'success';
   message?: string;
   fieldErrors?: Record<string, string>;
+  redirectTo?: string;
 };
 
-function parseProductFormData(formData: FormData) {
-  return {
-    name: formData.get('name'),
-    slug: formData.get('slug'),
-    sku: formData.get('sku'),
-    shortDescription: formData.get('shortDescription'),
-    description: formData.get('description'),
-    basePrice: formData.get('basePrice'),
-    priceIsFrom: formData.get('priceIsFrom'),
-    currency: formData.get('currency'),
-    categoryId: formData.get('categoryId'),
-    isActive: formData.get('isActive'),
-    isFeatured: formData.get('isFeatured'),
-    sortOrder: formData.get('sortOrder'),
-    customizationNotes: formData.get('customizationNotes'),
-    minOrderQuantity: formData.get('minOrderQuantity'),
-    metaTitle: formData.get('metaTitle'),
-    metaDescription: formData.get('metaDescription'),
-    attributeValueIds: formData.getAll('attributeValueIds'),
-  };
-}
+export type ProductFormInput = {
+  name: FormDataEntryValue | null;
+  slug: FormDataEntryValue | null;
+  sku: FormDataEntryValue | null;
+  shortDescription: FormDataEntryValue | null;
+  description: FormDataEntryValue | null;
+  basePrice: FormDataEntryValue | null;
+  priceIsFrom: FormDataEntryValue | null;
+  currency: FormDataEntryValue | null;
+  categoryId: FormDataEntryValue | null;
+  isActive: FormDataEntryValue | null;
+  isFeatured: FormDataEntryValue | null;
+  sortOrder: FormDataEntryValue | null;
+  customizationNotes: FormDataEntryValue | null;
+  minOrderQuantity: FormDataEntryValue | null;
+  metaTitle: FormDataEntryValue | null;
+  metaDescription: FormDataEntryValue | null;
+  attributeValueIds: FormDataEntryValue[];
+};
 
 /** true si es el error de unicidad de Prisma sobre el slug (P2002). */
 function isDuplicateSlugError(error: unknown): boolean {
@@ -66,13 +64,21 @@ function extractZodFieldErrors(error: unknown): Record<string, string> | null {
   return fieldErrors;
 }
 
-export async function createProductAction(
-  _prevState: ProductFormState,
-  formData: FormData,
-): Promise<ProductFormState> {
+// createProductAction/updateProductAction las llama el formulario desde un
+// botón type="button" (no type="submit" dentro de un <form>): en este
+// entorno, un type="submit" dentro de un <form> dispara el mecanismo de
+// "envío de formulario" de Next.js para Server Actions, pensado para
+// degradar sin JS, incluso si el propio <form> no tiene `action`. Ese
+// mecanismo intenta preparar una respuesta de navegación completa dentro del
+// mismo request, y esa segunda pasada pierde la cookie de sesión (el
+// middleware la ve como no autenticada y la Server Action nunca llega a
+// ejecutarse). El formulario arma un objeto plano a partir del FormData y
+// navega con router.push().
+
+export async function createProductAction(input: ProductFormInput): Promise<ProductFormState> {
   let created: { id: string; slug: string };
   try {
-    created = await createProduct(parseProductFormData(formData));
+    created = await createProduct(input);
   } catch (error) {
     if (isDuplicateSlugError(error)) {
       return { status: 'error', fieldErrors: { slug: 'Ya existe un producto con ese slug.' } };
@@ -86,17 +92,16 @@ export async function createProductAction(
   revalidatePath('/admin/productos');
   revalidatePath('/catalogo');
   revalidatePath(`/producto/${created.slug}`);
-  redirect(`/admin/productos/${created.id}/editar`);
+  return { status: 'success', redirectTo: `/admin/productos/${created.id}/editar` };
 }
 
 export async function updateProductAction(
   id: string,
-  _prevState: ProductFormState,
-  formData: FormData,
+  input: ProductFormInput,
 ): Promise<ProductFormState> {
   let updated: { id: string; slug: string };
   try {
-    updated = await updateProduct(id, parseProductFormData(formData));
+    updated = await updateProduct(id, input);
   } catch (error) {
     if (isDuplicateSlugError(error)) {
       return { status: 'error', fieldErrors: { slug: 'Ya existe un producto con ese slug.' } };
@@ -110,7 +115,7 @@ export async function updateProductAction(
   revalidatePath('/admin/productos');
   revalidatePath('/catalogo');
   revalidatePath(`/producto/${updated.slug}`);
-  redirect(`/admin/productos/${updated.id}/editar`);
+  return { status: 'success', redirectTo: `/admin/productos/${updated.id}/editar` };
 }
 
 export async function deleteProductAction(id: string): Promise<{ ok: boolean; message?: string }> {
