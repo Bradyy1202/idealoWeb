@@ -20,6 +20,8 @@ export const productFiltersSchema = z.object({
   attributeValueIdsByAttribute: z
     .record(z.string().cuid(), z.array(z.string().cuid()).min(1))
     .default({}),
+  // Buscador (tarea 2.7): coincide contra nombre, descripción y SKU.
+  q: z.string().trim().min(1).max(120).optional(),
   sort: productSortSchema,
   skip: z.coerce.number().int().min(0).default(0),
   take: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),

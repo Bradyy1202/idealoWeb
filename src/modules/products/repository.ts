@@ -21,7 +21,10 @@ const productListSelect = {
 
 export type ProductListRow = Prisma.ProductGetPayload<{ select: typeof productListSelect }>;
 
-type ProductFilterFields = Pick<ProductFilters, 'categoryIds' | 'attributeValueIdsByAttribute'>;
+type ProductFilterFields = Pick<
+  ProductFilters,
+  'categoryIds' | 'attributeValueIdsByAttribute' | 'q'
+>;
 
 /**
  * Arma el `where` de Prisma para el filtrado multifaceta. Función pura
@@ -47,6 +50,17 @@ export function buildProductWhere(filters: ProductFilterFields): Prisma.ProductW
     where.AND = attributeGroups.map((valueIds) => ({
       attributeValues: { some: { attributeValueId: { in: valueIds } } },
     }));
+  }
+
+  // `OR` a este nivel se combina con AND con el resto de las claves del
+  // where (isActive, categoryId, AND): es una restricción más, no reemplaza
+  // las demás. Adentro, coincide con cualquiera de los tres campos.
+  if (filters.q) {
+    where.OR = [
+      { name: { contains: filters.q, mode: 'insensitive' } },
+      { description: { contains: filters.q, mode: 'insensitive' } },
+      { sku: { contains: filters.q, mode: 'insensitive' } },
+    ];
   }
 
   return where;

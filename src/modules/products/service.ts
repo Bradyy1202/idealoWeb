@@ -129,3 +129,13 @@ export async function getProductBySlug(slugInput: unknown): Promise<ProductDetai
   const row = await findBySlug(slug);
   return row ? toProductDetail(row) : null;
 }
+
+/** Mismo categoryId que el producto actual, excluyéndolo. Se pide uno de más para no perder cupo cuando el propio producto aparece en la página. */
+export async function getRelatedProducts(
+  excludeProductId: string,
+  categoryId: string,
+  limit = 4,
+): Promise<ProductListItem[]> {
+  const { items } = await getFilteredProducts({ categoryIds: [categoryId], take: limit + 1 });
+  return items.filter((item) => item.id !== excludeProductId).slice(0, limit);
+}
