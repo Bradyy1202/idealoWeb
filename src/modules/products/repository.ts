@@ -142,6 +142,14 @@ export async function countActive(): Promise<number> {
   return prisma.product.count({ where: { isActive: true } });
 }
 
+/** Solo lo que necesita sitemap.ts (tarea 5.3): nunca se filtra por categoría/atributos, siempre todos los productos activos. */
+export async function findAllActiveSlugs(): Promise<Array<{ slug: string; updatedAt: Date }>> {
+  return prisma.product.findMany({
+    where: { isActive: true },
+    select: { slug: true, updatedAt: true },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Listado admin (tarea 4.6): a diferencia de findManyByFilters, incluye
 // productos inactivos y no combina AND/OR de atributos, solo texto + estado.

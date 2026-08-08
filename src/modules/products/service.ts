@@ -14,6 +14,7 @@ import {
   findBySlug,
   countAll,
   countActive,
+  findAllActiveSlugs,
   findManyForAdmin,
   countForAdmin,
   findByIdForEdit,
@@ -158,6 +159,12 @@ export async function getProductBySlug(slugInput: unknown): Promise<ProductDetai
   const slug = productSlugSchema.parse(slugInput);
   const row = await findBySlug(slug);
   return row ? toProductDetail(row) : null;
+}
+
+export async function getAllActiveProductSlugs(): Promise<
+  Array<{ slug: string; updatedAt: Date }>
+> {
+  return findAllActiveSlugs();
 }
 
 export type ProductCounts = { total: number; active: number };
