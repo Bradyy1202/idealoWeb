@@ -70,7 +70,11 @@ export function ProductTable({ items }: { items: ProductAdminListItem[] }) {
                 </span>
               </td>
               <td className="p-3">
-                <ProductRowActions productId={product.id} isActive={product.isActive} />
+                <ProductRowActions
+                  productId={product.id}
+                  productName={product.name}
+                  isActive={product.isActive}
+                />
               </td>
             </tr>
           ))}

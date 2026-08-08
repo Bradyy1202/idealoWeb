@@ -5,9 +5,11 @@ import { toggleProductActiveAction, deleteProductAction } from '@/modules/produc
 
 export function ProductRowActions({
   productId,
+  productName,
   isActive,
 }: {
   productId: string;
+  productName: string;
   isActive: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -22,7 +24,7 @@ export function ProductRowActions({
   }
 
   function handleDelete() {
-    if (!window.confirm('¿Borrar este producto? Esta acción no se puede deshacer.')) return;
+    if (!window.confirm(`¿Borrar "${productName}"? Esta acción no se puede deshacer.`)) return;
     setError(null);
     startTransition(async () => {
       const result = await deleteProductAction(productId);
@@ -37,6 +39,7 @@ export function ProductRowActions({
         type="button"
         onClick={handleToggle}
         disabled={isPending}
+        aria-label={`${isActive ? 'Desactivar' : 'Activar'} "${productName}"`}
         className="text-muted-foreground hover:text-foreground text-xs font-medium underline-offset-2 hover:underline disabled:opacity-50"
       >
         {isActive ? 'Desactivar' : 'Activar'}
@@ -45,6 +48,7 @@ export function ProductRowActions({
         type="button"
         onClick={handleDelete}
         disabled={isPending}
+        aria-label={`Borrar "${productName}"`}
         className="text-destructive text-xs font-medium underline-offset-2 hover:underline disabled:opacity-50"
       >
         Borrar

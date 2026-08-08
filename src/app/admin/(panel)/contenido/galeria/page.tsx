@@ -58,7 +58,7 @@ export default async function GaleriaPage() {
                   >
                     Editar
                   </Link>
-                  <DeleteGalleryItemButton itemId={item.id} />
+                  <DeleteGalleryItemButton itemId={item.id} title={item.title} />
                 </div>
               </div>
             </div>

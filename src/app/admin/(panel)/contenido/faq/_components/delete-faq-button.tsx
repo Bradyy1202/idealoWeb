@@ -23,6 +23,7 @@ export function DeleteFaqButton({ faqId, question }: { faqId: string; question: 
         type="button"
         onClick={handleDelete}
         disabled={isPending}
+        aria-label={`Borrar "${question}"`}
         className="text-destructive text-sm font-medium underline-offset-2 hover:underline disabled:opacity-50"
       >
         Borrar

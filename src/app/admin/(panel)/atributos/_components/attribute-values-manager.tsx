@@ -109,6 +109,7 @@ export function AttributeValuesManager({
               type="button"
               onClick={() => handleRemove(value.id)}
               disabled={isPending}
+              aria-label={`Quitar valor "${value.value}"`}
               className="text-destructive text-xs underline-offset-2 hover:underline disabled:opacity-50"
             >
               Quitar

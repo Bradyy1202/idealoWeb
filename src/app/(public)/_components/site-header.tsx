@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, Menu, X } from 'lucide-react';
@@ -32,6 +32,10 @@ const itemFadeIn = {
 export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const menuCloseRef = useRef<HTMLButtonElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
+  const wasMenuOpenRef = useRef(false);
   const whatsappHref = buildWhatsAppUrl(
     contact.whatsapp,
     'Hola, quiero cotizar productos personalizados.',
@@ -43,6 +47,57 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Bloquea el scroll de fondo mientras el menú de pantalla completa está
+  // abierto, y devuelve el foco al botón que lo abrió al cerrarlo (sin esto
+  // el foco se pierde en el <body>).
+  useEffect(() => {
+    if (isMenuOpen) {
+      wasMenuOpenRef.current = true;
+      document.body.style.overflow = 'hidden';
+      menuCloseRef.current?.focus();
+    } else if (wasMenuOpenRef.current) {
+      wasMenuOpenRef.current = false;
+      document.body.style.overflow = '';
+      menuTriggerRef.current?.focus();
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
+  // Escape cierra el menú; Tab queda atrapado dentro del panel (foco
+  // circular) para que no se pueda tabular al header que sigue detrás,
+  // visualmente tapado pero técnicamente en el DOM.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !menuPanelRef.current) return;
+
+      const focusable = menuPanelRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])',
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   return (
     <>
@@ -86,6 +141,7 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
           <div className="flex items-center gap-1 lg:hidden">
             <QuoteListBadge />
             <button
+              ref={menuTriggerRef}
               type="button"
               className="flex"
               onClick={() => setIsMenuOpen(true)}
@@ -101,7 +157,11 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
 
       {isMenuOpen ? (
         <motion.div
+          ref={menuPanelRef}
           id="menu-movil"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menú principal"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -109,7 +169,7 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
         >
           <Container className="flex h-16 items-center justify-between">
             <Logo height={26} />
-            <button type="button" onClick={() => setIsMenuOpen(false)}>
+            <button ref={menuCloseRef} type="button" onClick={() => setIsMenuOpen(false)}>
               <X className="h-6 w-6" />
               <span className="sr-only">Cerrar menú</span>
             </button>

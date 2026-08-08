@@ -29,6 +29,7 @@ export function DeleteTestimonialButton({
         type="button"
         onClick={handleDelete}
         disabled={isPending}
+        aria-label={`Borrar el testimonio de "${authorName}"`}
         className="text-destructive text-sm font-medium underline-offset-2 hover:underline disabled:opacity-50"
       >
         Borrar
