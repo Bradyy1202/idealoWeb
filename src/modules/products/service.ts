@@ -26,6 +26,7 @@ import {
   reorderImages,
   setPrimaryImage,
   setActive,
+  findSlugById,
   type ProductListRow,
   type ProductDetailRow,
   type ProductAdminListRow,
@@ -345,4 +346,9 @@ export async function reorderProductImages(input: unknown): Promise<void> {
 
 export async function setProductPrimaryImage(productId: string, imageId: string): Promise<void> {
   await setPrimaryImage(productId, imageId);
+}
+
+/** Para revalidar `/producto/[slug]` desde acciones de imagen que solo reciben el id del producto. */
+export async function getProductSlugById(productId: string): Promise<string | null> {
+  return findSlugById(productId);
 }

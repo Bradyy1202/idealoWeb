@@ -395,6 +395,12 @@ export async function setPrimaryImage(productId: string, imageId: string): Promi
   ]);
 }
 
+/** Para revalidar `/producto/[slug]` tras una mutación que solo conoce el id (imágenes). */
+export async function findSlugById(id: string): Promise<string | null> {
+  const row = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+  return row?.slug ?? null;
+}
+
 /** Acción rápida del listado (tarea 4.6): no toca atributos ni imágenes, solo el estado. */
 export async function setActive(id: string, isActive: boolean): Promise<void> {
   await prisma.product.update({ where: { id }, data: { isActive } });

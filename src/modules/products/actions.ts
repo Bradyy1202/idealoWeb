@@ -11,6 +11,7 @@ import {
   removeProductImage,
   reorderProductImages,
   setProductPrimaryImage,
+  getProductSlugById,
 } from './service';
 import type { AddProductImageInput } from './schema';
 
@@ -145,13 +146,19 @@ export async function toggleProductActiveAction(
   return { ok: true };
 }
 
+/** `/producto/[slug]` se identifica por slug, no por id: sin esto la revalidación apunta a una ruta que no existe y no hace nada. */
+async function revalidatePublicProductPage(productId: string): Promise<void> {
+  const slug = await getProductSlugById(productId);
+  if (slug) revalidatePath(`/producto/${slug}`, 'page');
+}
+
 export async function addProductImageAction(
   input: AddProductImageInput,
 ): Promise<{ ok: boolean; id?: string }> {
   try {
     const { id } = await addProductImage(input);
     revalidatePath(`/admin/productos/${input.productId}/editar`);
-    revalidatePath(`/producto/${input.productId}`, 'page');
+    await revalidatePublicProductPage(input.productId);
     return { ok: true, id };
   } catch (error) {
     console.error('No se pudo guardar la imagen subida', error);
@@ -170,6 +177,7 @@ export async function removeProductImageAction(
     return { ok: false };
   }
   revalidatePath(`/admin/productos/${productId}/editar`);
+  await revalidatePublicProductPage(productId);
   return { ok: true };
 }
 
@@ -184,6 +192,7 @@ export async function reorderProductImagesAction(
     return { ok: false };
   }
   revalidatePath(`/admin/productos/${productId}/editar`);
+  await revalidatePublicProductPage(productId);
   return { ok: true };
 }
 
@@ -198,6 +207,6 @@ export async function setProductPrimaryImageAction(
     return { ok: false };
   }
   revalidatePath(`/admin/productos/${productId}/editar`);
-  revalidatePath(`/producto/${productId}`, 'page');
+  await revalidatePublicProductPage(productId);
   return { ok: true };
 }
