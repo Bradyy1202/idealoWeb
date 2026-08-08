@@ -1,7 +1,10 @@
 import { z } from 'zod';
+import { slugSchema } from '@/shared/lib/slug';
 
 export const DEFAULT_PAGE_SIZE = 24;
 export const MAX_PAGE_SIZE = 60;
+
+export const productSlugSchema = slugSchema;
 
 export const productSortSchema = z
   .enum(['featured', 'name-asc', 'price-asc', 'price-desc', 'newest'])

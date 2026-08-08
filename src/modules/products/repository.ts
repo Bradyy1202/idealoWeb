@@ -73,3 +73,43 @@ export async function findManyByFilters(filters: ProductFilters): Promise<Produc
 export async function countByFilters(filters: ProductFilterFields): Promise<number> {
   return prisma.product.count({ where: buildProductWhere(filters) });
 }
+
+const productDetailSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  sku: true,
+  shortDescription: true,
+  description: true,
+  basePrice: true,
+  priceIsFrom: true,
+  currency: true,
+  customizationNotes: true,
+  minOrderQuantity: true,
+  category: { select: { id: true, name: true, slug: true } },
+  images: {
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+    select: { id: true, url: true, alt: true, blurHash: true, width: true, height: true },
+  },
+  attributeValues: {
+    select: {
+      attributeValue: {
+        select: {
+          value: true,
+          hexColor: true,
+          attribute: { select: { name: true, slug: true, unit: true, sortOrder: true } },
+        },
+      },
+    },
+  },
+} satisfies Prisma.ProductSelect;
+
+export type ProductDetailRow = Prisma.ProductGetPayload<{ select: typeof productDetailSelect }>;
+
+/** `findFirst` (no `findUnique`) porque combina el slug único con `isActive`. */
+export async function findBySlug(slug: string): Promise<ProductDetailRow | null> {
+  return prisma.product.findFirst({
+    where: { slug, isActive: true },
+    select: productDetailSelect,
+  });
+}
