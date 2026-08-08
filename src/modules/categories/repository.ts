@@ -68,3 +68,8 @@ export async function findCategoryBySlugWithAttributes(
     select: categoryDetailSelect,
   });
 }
+
+/** Todas las categorías (incluye inactivas): para el panel (Fase 4). */
+export async function countAll(): Promise<number> {
+  return prisma.category.count();
+}

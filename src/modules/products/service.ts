@@ -3,6 +3,8 @@ import {
   findManyByFilters,
   countByFilters,
   findBySlug,
+  countAll,
+  countActive,
   type ProductListRow,
   type ProductDetailRow,
 } from './repository';
@@ -128,6 +130,13 @@ export async function getProductBySlug(slugInput: unknown): Promise<ProductDetai
   const slug = productSlugSchema.parse(slugInput);
   const row = await findBySlug(slug);
   return row ? toProductDetail(row) : null;
+}
+
+export type ProductCounts = { total: number; active: number };
+
+export async function getProductCounts(): Promise<ProductCounts> {
+  const [total, active] = await Promise.all([countAll(), countActive()]);
+  return { total, active };
 }
 
 /** Mismo categoryId que el producto actual, excluyéndolo. Se pide uno de más para no perder cupo cuando el propio producto aparece en la página. */

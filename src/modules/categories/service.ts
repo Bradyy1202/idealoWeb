@@ -2,6 +2,7 @@ import { categorySlugSchema } from './schema';
 import {
   findCategoryTree,
   findCategoryBySlugWithAttributes,
+  countAll,
   type CategoryDetailRow,
 } from './repository';
 
@@ -57,6 +58,10 @@ export async function getCategoryTree(): Promise<CategoryTreeNode[]> {
       slug: child.slug,
     })),
   }));
+}
+
+export async function getCategoryCount(): Promise<number> {
+  return countAll();
 }
 
 export async function getCategoryDetailBySlug(slugInput: unknown): Promise<CategoryDetail | null> {

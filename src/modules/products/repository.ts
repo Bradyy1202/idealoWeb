@@ -127,3 +127,15 @@ export async function findBySlug(slug: string): Promise<ProductDetailRow | null>
     select: productDetailSelect,
   });
 }
+
+// Para el panel (Fase 4): a diferencia de buildProductWhere(), estos SÍ
+// cuentan productos inactivos a propósito. Separado de la consulta pública
+// para no arriesgar que un flag mal puesto filtre productos inactivos en
+// el catálogo del sitio.
+export async function countAll(): Promise<number> {
+  return prisma.product.count();
+}
+
+export async function countActive(): Promise<number> {
+  return prisma.product.count({ where: { isActive: true } });
+}

@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/lib/prisma';
 import type { CreateInquiryInput } from './schema';
 
@@ -24,5 +25,31 @@ export async function createInquiry(input: CreateInquiryInput): Promise<{ id: st
           : undefined,
     },
     select: { id: true },
+  });
+}
+
+/** Consultas sin atender: es el número que importa mostrar de un vistazo en el panel. */
+export async function countNew(): Promise<number> {
+  return prisma.inquiry.count({ where: { status: 'NEW' } });
+}
+
+const inquirySummarySelect = {
+  id: true,
+  source: true,
+  status: true,
+  customerName: true,
+  customerEmail: true,
+  message: true,
+  createdAt: true,
+  items: { select: { productSnapshot: true, quantity: true } },
+} satisfies Prisma.InquirySelect;
+
+export type InquirySummaryRow = Prisma.InquiryGetPayload<{ select: typeof inquirySummarySelect }>;
+
+export async function findRecent(limit: number): Promise<InquirySummaryRow[]> {
+  return prisma.inquiry.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    select: inquirySummarySelect,
   });
 }
