@@ -6,7 +6,7 @@ import { DEFAULT_PAGE_SIZE, productSortSchema, type ProductSort } from '@/module
 import { ProductGrid } from '@/modules/products/components/product-grid';
 import { ProductGridSkeleton } from '@/modules/products/components/product-grid-skeleton';
 import { SortSelect } from './_components/sort-select';
-import { Pagination } from './_components/pagination';
+import { Pagination } from '@/shared/ui/pagination';
 import { SearchInput } from './_components/search-input';
 
 export const metadata: Metadata = {

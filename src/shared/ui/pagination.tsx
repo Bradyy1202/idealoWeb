@@ -5,6 +5,7 @@ type PaginationProps = {
   totalPages: number;
   searchParams: Record<string, string | string[] | undefined>;
   basePath: string;
+  label?: string;
 };
 
 function buildHref(
@@ -28,7 +29,13 @@ function buildHref(
 }
 
 /** Enlaces reales (no botones con JS): funciona sin cliente y es rastreable por buscadores. */
-export function Pagination({ page, totalPages, searchParams, basePath }: PaginationProps) {
+export function Pagination({
+  page,
+  totalPages,
+  searchParams,
+  basePath,
+  label = 'Paginación',
+}: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const linkClassName =
@@ -37,10 +44,7 @@ export function Pagination({ page, totalPages, searchParams, basePath }: Paginat
     'text-muted-foreground/50 rounded-full border border-transparent px-4 py-2 text-sm';
 
   return (
-    <nav
-      aria-label="Paginación del catálogo"
-      className="flex items-center justify-center gap-4 pt-12"
-    >
+    <nav aria-label={label} className="flex items-center justify-center gap-4 pt-12">
       {page > 1 ? (
         <Link href={buildHref(basePath, page - 1, searchParams)} className={linkClassName}>
           ← Anterior
