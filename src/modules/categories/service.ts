@@ -114,6 +114,8 @@ export type CategoryAdminItem = {
   parentId: string | null;
   sortOrder: number;
   isActive: boolean;
+  metaTitle: string | null;
+  metaDescription: string | null;
   productCount: number;
   childCount: number;
   filterableAttributes: FilterableAttribute[];
@@ -129,6 +131,8 @@ function toCategoryAdminItem(row: CategoryAdminRow): CategoryAdminItem {
     parentId: row.parentId,
     sortOrder: row.sortOrder,
     isActive: row.isActive,
+    metaTitle: row.metaTitle,
+    metaDescription: row.metaDescription,
     productCount: row._count.products,
     childCount: row._count.children,
     filterableAttributes: row.attributes.map(({ attribute }) => ({
@@ -174,7 +178,11 @@ function toCategoryWriteData(input: CategoryFormInput): CategoryWriteData {
   };
 }
 
-/** Árbol de máximo 2 niveles (ADR 0001): el padre elegido no puede ser, a su vez, hijo de otra categoría. */
+/**
+ * Árbol de máximo 2 niveles (ADR 0001): el padre elegido no puede ser, a su
+ * vez, hijo de otra categoría, y la propia categoría no puede tener ya
+ * subcategorías (si las tuviera, pasarían a ser nietas del nuevo padre).
+ */
 async function assertValidParent(parentId: string | null, ownId?: string): Promise<void> {
   if (!parentId) return;
   if (parentId === ownId) {
@@ -186,6 +194,14 @@ async function assertValidParent(parentId: string | null, ownId?: string): Promi
   }
   if (parent.parentId) {
     throw new Error('El árbol admite máximo dos niveles: elegí una categoría raíz como padre.');
+  }
+  if (ownId) {
+    const self = await findByIdForAdmin(ownId);
+    if (self && self._count.children > 0) {
+      throw new Error(
+        'Esta categoría tiene subcategorías: no puede pasar a ser, a su vez, una subcategoría.',
+      );
+    }
   }
 }
 

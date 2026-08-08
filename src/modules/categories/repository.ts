@@ -83,6 +83,8 @@ const categoryAdminSelect = {
   parentId: true,
   sortOrder: true,
   isActive: true,
+  metaTitle: true,
+  metaDescription: true,
   _count: { select: { products: true, children: true } },
   // Sin el filtro por isFilterable de categoryDetailSelect: el panel asigna
   // valores de CUALQUIER atributo ligado a la categoría, no solo los que se
