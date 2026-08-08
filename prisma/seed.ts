@@ -288,31 +288,33 @@ const settings = [
     key: 'contact',
     group: 'contacto',
     value: {
-      whatsapp: '50600000000',
-      email: 'contacto@ejemplo.com',
+      whatsapp: '50685097011',
+      email: 'bradycmc1@gmail.com',
       instagram: 'https://instagram.com/ejemplo',
       facebook: 'https://facebook.com/ejemplo',
-      schedule: 'Lunes a viernes 8:00 a 17:00 · Sábados 9:00 a 13:00',
-      location: 'Alajuela, Costa Rica',
+      schedule: 'Lunes a viernes 8:00 a 20:00 · Sábados 9:00 a 17:00',
+      location: 'San Carlos, Costa Rica',
     },
   },
   {
     key: 'hero',
     group: 'hero',
     value: {
-      title: 'Convertimos tus ideas en productos únicos',
+      title: 'Personalizamos cada detalle para hacerlo único.',
+      // Recortado a 14 palabras: el criterio de cierre de la fase 1 pide que
+      // el hero quepa en el primer viewport en móvil sin desplazar el CTA.
       subtitle:
-        'Botellas, tazas, textiles y accesorios personalizados con sublimación de alta calidad.',
-      primaryCta: 'Ver catálogo',
-      secondaryCta: 'Cotizar por WhatsApp',
+        'Botellas, tazas, textiles y accesorios para regalos y empresas. Envíos a todo Costa Rica.',
+      primaryCta: 'Explorar catálogo',
+      secondaryCta: 'Solicitar cotización',
     },
   },
   {
     key: 'about',
     group: 'sobre-nosotros',
     value: {
-      title: '¿Quiénes somos?',
-      body: 'Somos un emprendimiento familiar dedicado a la sublimación. Empezamos personalizando tazas para amigos y hoy acompañamos a personas y empresas que quieren regalar algo con significado.',
+      title: 'Creamos productos que dejan huella.',
+      body: 'Somos una marca costarricense especializada en productos personalizados mediante sublimación. Combinamos creatividad, materiales de calidad y atención personalizada para transformar tus ideas en piezas únicas que destacan por su diseño, durabilidad y significado.',
     },
   },
 ];
