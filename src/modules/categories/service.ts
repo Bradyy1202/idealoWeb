@@ -1,9 +1,18 @@
-import { categorySlugSchema } from './schema';
+import { categorySlugSchema, categoryFormSchema, type CategoryFormInput } from './schema';
 import {
   findCategoryTree,
   findCategoryBySlugWithAttributes,
   countAll,
+  findAllForAdmin,
+  findByIdForAdmin,
+  createCategory,
+  updateCategory,
+  checkCategoryDeletable,
+  deleteCategory,
   type CategoryDetailRow,
+  type CategoryAdminRow,
+  type CategoryWriteData,
+  type CategoryDeleteBlockedReason,
 } from './repository';
 
 export type CategoryTreeNode = {
@@ -90,4 +99,126 @@ export async function getCategoryDetailBySlug(slugInput: unknown): Promise<Categ
       })),
     })),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Panel de administración (tarea 4.10)
+// ---------------------------------------------------------------------------
+
+export type CategoryAdminItem = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  parentId: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  productCount: number;
+  childCount: number;
+  filterableAttributes: FilterableAttribute[];
+};
+
+function toCategoryAdminItem(row: CategoryAdminRow): CategoryAdminItem {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    imageUrl: row.imageUrl,
+    parentId: row.parentId,
+    sortOrder: row.sortOrder,
+    isActive: row.isActive,
+    productCount: row._count.products,
+    childCount: row._count.children,
+    filterableAttributes: row.attributes.map(({ attribute }) => ({
+      id: attribute.id,
+      name: attribute.name,
+      slug: attribute.slug,
+      type: attribute.type,
+      unit: attribute.unit,
+      values: attribute.values.map((value) => ({
+        id: value.id,
+        value: value.value,
+        slug: value.slug,
+        hexColor: value.hexColor,
+      })),
+    })),
+  };
+}
+
+export async function getCategoriesForAdmin(): Promise<CategoryAdminItem[]> {
+  const rows = await findAllForAdmin();
+  return rows.map(toCategoryAdminItem);
+}
+
+export async function getCategoryForEdit(id: string): Promise<CategoryAdminItem | null> {
+  const row = await findByIdForAdmin(id);
+  return row ? toCategoryAdminItem(row) : null;
+}
+
+function emptyToNull(value: string | undefined): string | null {
+  return value && value.trim() !== '' ? value.trim() : null;
+}
+
+function toCategoryWriteData(input: CategoryFormInput): CategoryWriteData {
+  return {
+    name: input.name,
+    slug: input.slug,
+    description: emptyToNull(input.description),
+    parentId: input.parentId ?? null,
+    sortOrder: input.sortOrder,
+    isActive: input.isActive,
+    metaTitle: emptyToNull(input.metaTitle),
+    metaDescription: emptyToNull(input.metaDescription),
+  };
+}
+
+/** Árbol de máximo 2 niveles (ADR 0001): el padre elegido no puede ser, a su vez, hijo de otra categoría. */
+async function assertValidParent(parentId: string | null, ownId?: string): Promise<void> {
+  if (!parentId) return;
+  if (parentId === ownId) {
+    throw new Error('Una categoría no puede ser su propia categoría padre.');
+  }
+  const parent = await findByIdForAdmin(parentId);
+  if (!parent) {
+    throw new Error('La categoría padre elegida no existe.');
+  }
+  if (parent.parentId) {
+    throw new Error('El árbol admite máximo dos niveles: elegí una categoría raíz como padre.');
+  }
+}
+
+export async function createCategoryFromInput(input: unknown): Promise<{ id: string }> {
+  const parsed = categoryFormSchema.parse(input);
+  await assertValidParent(parsed.parentId ?? null);
+  return createCategory(toCategoryWriteData(parsed), parsed.attributeIds);
+}
+
+export async function updateCategoryFromInput(id: string, input: unknown): Promise<{ id: string }> {
+  const parsed = categoryFormSchema.parse(input);
+  await assertValidParent(parsed.parentId ?? null, id);
+  return updateCategory(id, toCategoryWriteData(parsed), parsed.attributeIds);
+}
+
+export class CategoryDeleteBlockedError extends Error {
+  reason: CategoryDeleteBlockedReason;
+
+  constructor(reason: CategoryDeleteBlockedReason) {
+    super(
+      reason === 'has-products'
+        ? 'Esta categoría tiene productos asociados: movelos o borralos primero.'
+        : 'Esta categoría tiene subcategorías: borralas primero.',
+    );
+    this.reason = reason;
+  }
+}
+
+/** Chequea antes de borrar en vez de dejar que la base tire el error de FK (onDelete: Restrict): el panel necesita un mensaje claro, no un 500. */
+export async function deleteCategoryById(id: string): Promise<void> {
+  const blockedReason = await checkCategoryDeletable(id);
+  if (blockedReason) {
+    throw new CategoryDeleteBlockedError(blockedReason);
+  }
+  await deleteCategory(id);
 }

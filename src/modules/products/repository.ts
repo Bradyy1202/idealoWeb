@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/lib/prisma';
-import type { ProductFilters, ProductSort } from './schema';
+import type { ProductAdminFilters, ProductFilters, ProductSort } from './schema';
 
 const productListSelect = {
   id: true,
@@ -138,4 +138,264 @@ export async function countAll(): Promise<number> {
 
 export async function countActive(): Promise<number> {
   return prisma.product.count({ where: { isActive: true } });
+}
+
+// ---------------------------------------------------------------------------
+// Listado admin (tarea 4.6): a diferencia de findManyByFilters, incluye
+// productos inactivos y no combina AND/OR de atributos, solo texto + estado.
+// ---------------------------------------------------------------------------
+
+const productAdminListSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  sku: true,
+  basePrice: true,
+  isActive: true,
+  isFeatured: true,
+  category: { select: { id: true, name: true } },
+  images: {
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+    take: 1,
+    select: { url: true },
+  },
+} satisfies Prisma.ProductSelect;
+
+export type ProductAdminListRow = Prisma.ProductGetPayload<{
+  select: typeof productAdminListSelect;
+}>;
+
+function buildAdminWhere(
+  filters: Pick<ProductAdminFilters, 'q' | 'status'>,
+): Prisma.ProductWhereInput {
+  const where: Prisma.ProductWhereInput = {};
+  if (filters.status === 'active') where.isActive = true;
+  if (filters.status === 'inactive') where.isActive = false;
+
+  if (filters.q) {
+    where.OR = [
+      { name: { contains: filters.q, mode: 'insensitive' } },
+      { sku: { contains: filters.q, mode: 'insensitive' } },
+    ];
+  }
+  return where;
+}
+
+export async function findManyForAdmin(
+  filters: ProductAdminFilters,
+): Promise<ProductAdminListRow[]> {
+  return prisma.product.findMany({
+    where: buildAdminWhere(filters),
+    select: productAdminListSelect,
+    orderBy: { name: 'asc' },
+    skip: filters.skip,
+    take: filters.take,
+  });
+}
+
+export async function countForAdmin(
+  filters: Pick<ProductAdminFilters, 'q' | 'status'>,
+): Promise<number> {
+  return prisma.product.count({ where: buildAdminWhere(filters) });
+}
+
+// ---------------------------------------------------------------------------
+// Formulario de producto (tareas 4.7-4.9)
+// ---------------------------------------------------------------------------
+
+const productEditSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  sku: true,
+  shortDescription: true,
+  description: true,
+  basePrice: true,
+  priceIsFrom: true,
+  currency: true,
+  categoryId: true,
+  isActive: true,
+  isFeatured: true,
+  sortOrder: true,
+  customizationNotes: true,
+  minOrderQuantity: true,
+  metaTitle: true,
+  metaDescription: true,
+  images: {
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+    select: {
+      id: true,
+      url: true,
+      imageId: true,
+      alt: true,
+      width: true,
+      height: true,
+      isPrimary: true,
+      sortOrder: true,
+    },
+  },
+  attributeValues: { select: { attributeValueId: true } },
+} satisfies Prisma.ProductSelect;
+
+export type ProductEditRow = Prisma.ProductGetPayload<{ select: typeof productEditSelect }>;
+
+export async function findByIdForEdit(id: string): Promise<ProductEditRow | null> {
+  return prisma.product.findUnique({ where: { id }, select: productEditSelect });
+}
+
+export type ProductWriteData = {
+  name: string;
+  slug: string;
+  sku: string | null;
+  shortDescription: string | null;
+  description: string | null;
+  basePrice: number | null;
+  priceIsFrom: boolean;
+  currency: string;
+  categoryId: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  sortOrder: number;
+  customizationNotes: string | null;
+  minOrderQuantity: number;
+  metaTitle: string | null;
+  metaDescription: string | null;
+};
+
+export async function create(
+  data: ProductWriteData,
+  attributeValueIds: string[],
+): Promise<{ id: string; slug: string }> {
+  return prisma.product.create({
+    data: {
+      ...data,
+      attributeValues: {
+        create: attributeValueIds.map((attributeValueId) => ({ attributeValueId })),
+      },
+    },
+    select: { id: true, slug: true },
+  });
+}
+
+/** Reemplaza todos los ProductAttributeValue en vez de diffear: más simple y el volumen por producto es chico. */
+export async function update(
+  id: string,
+  data: ProductWriteData,
+  attributeValueIds: string[],
+): Promise<{ id: string; slug: string }> {
+  return prisma.$transaction(async (tx) => {
+    await tx.productAttributeValue.deleteMany({ where: { productId: id } });
+    return tx.product.update({
+      where: { id },
+      data: {
+        ...data,
+        attributeValues: {
+          create: attributeValueIds.map((attributeValueId) => ({ attributeValueId })),
+        },
+      },
+      select: { id: true, slug: true },
+    });
+  });
+}
+
+/** public_id de Cloudinary de cada imagen: la llamada a Cloudinary para borrarlas vive en service.ts, no acá. */
+export async function findImageIdsForProduct(productId: string): Promise<string[]> {
+  const images = await prisma.productImage.findMany({
+    where: { productId, imageId: { not: null } },
+    select: { imageId: true },
+  });
+  return images.map((image) => image.imageId).filter((id): id is string => id !== null);
+}
+
+export async function remove(id: string): Promise<void> {
+  await prisma.product.delete({ where: { id } });
+}
+
+// ---------------------------------------------------------------------------
+// Imágenes de producto (tarea 4.8)
+// ---------------------------------------------------------------------------
+
+export async function addImage(input: {
+  productId: string;
+  url: string;
+  imageId: string;
+  width?: number;
+  height?: number;
+  alt?: string;
+}): Promise<{ id: string }> {
+  const [{ _max }, existingCount] = await Promise.all([
+    prisma.productImage.aggregate({
+      where: { productId: input.productId },
+      _max: { sortOrder: true },
+    }),
+    prisma.productImage.count({ where: { productId: input.productId } }),
+  ]);
+
+  return prisma.productImage.create({
+    data: {
+      productId: input.productId,
+      url: input.url,
+      imageId: input.imageId,
+      width: input.width,
+      height: input.height,
+      alt: input.alt,
+      sortOrder: (_max.sortOrder ?? -1) + 1,
+      // La primera imagen que se sube queda como primaria por defecto.
+      isPrimary: existingCount === 0,
+    },
+    select: { id: true },
+  });
+}
+
+export type RemovedImage = { imageId: string | null; productId: string };
+
+/** Devuelve el public_id de Cloudinary (o null) para que service.ts lo borre allá también. */
+export async function removeImage(imageId: string): Promise<RemovedImage | null> {
+  const image = await prisma.productImage.findUnique({
+    where: { id: imageId },
+    select: { imageId: true, productId: true, isPrimary: true },
+  });
+  if (!image) return null;
+
+  await prisma.productImage.delete({ where: { id: imageId } });
+
+  if (image.isPrimary) {
+    const next = await prisma.productImage.findFirst({
+      where: { productId: image.productId },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true },
+    });
+    if (next) {
+      await prisma.productImage.update({ where: { id: next.id }, data: { isPrimary: true } });
+    }
+  }
+
+  return { imageId: image.imageId, productId: image.productId };
+}
+
+export async function reorderImages(productId: string, orderedImageIds: string[]): Promise<void> {
+  const matchingCount = await prisma.productImage.count({
+    where: { id: { in: orderedImageIds }, productId },
+  });
+  if (matchingCount !== orderedImageIds.length) {
+    throw new Error('Alguna imagen no pertenece a este producto.');
+  }
+
+  await prisma.$transaction(
+    orderedImageIds.map((id, index) =>
+      prisma.productImage.update({ where: { id }, data: { sortOrder: index } }),
+    ),
+  );
+}
+
+export async function setPrimaryImage(productId: string, imageId: string): Promise<void> {
+  await prisma.$transaction([
+    prisma.productImage.updateMany({ where: { productId }, data: { isPrimary: false } }),
+    prisma.productImage.update({ where: { id: imageId }, data: { isPrimary: true } }),
+  ]);
+}
+
+/** Acción rápida del listado (tarea 4.6): no toca atributos ni imágenes, solo el estado. */
+export async function setActive(id: string, isActive: boolean): Promise<void> {
+  await prisma.product.update({ where: { id }, data: { isActive } });
 }
