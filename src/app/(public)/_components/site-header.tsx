@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, Menu, X } from 'lucide-react';
 import { contact } from '@/shared/data/mock/site';
-import { buildWhatsAppUrl } from '@/shared/lib/format-price';
+import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Container } from '@/shared/ui/container';
 import { Button } from '@/shared/ui/button';
 import { Logo } from '@/shared/ui/logo';
+import { QuoteListBadge } from '@/modules/quote-list/components/quote-list-badge';
 
 const navigation = [
   { label: 'Catálogo', href: '/catalogo' },
@@ -70,6 +71,7 @@ export function SiteHeader() {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
+            <QuoteListBadge />
             <Link href="/catalogo">
               <Button variant="outline" size="sm" className="rounded-full">
                 Ver catálogo
@@ -82,16 +84,19 @@ export function SiteHeader() {
             </a>
           </div>
 
-          <button
-            type="button"
-            className="flex lg:hidden"
-            onClick={() => setIsMenuOpen(true)}
-            aria-expanded={isMenuOpen}
-            aria-controls="menu-movil"
-          >
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Abrir menú</span>
-          </button>
+          <div className="flex items-center gap-1 lg:hidden">
+            <QuoteListBadge />
+            <button
+              type="button"
+              className="flex"
+              onClick={() => setIsMenuOpen(true)}
+              aria-expanded={isMenuOpen}
+              aria-controls="menu-movil"
+            >
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Abrir menú</span>
+            </button>
+          </div>
         </Container>
       </motion.header>
 

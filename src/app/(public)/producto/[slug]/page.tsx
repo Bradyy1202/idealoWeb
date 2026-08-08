@@ -4,7 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { contact } from '@/shared/data/mock/site';
-import { buildWhatsAppUrl, formatPrice } from '@/shared/lib/format-price';
+import { formatPrice } from '@/shared/lib/format-price';
+import { buildProductInquiryMessage, buildWhatsAppUrl } from '@/shared/lib/whatsapp';
+import { SITE_URL } from '@/shared/lib/site-url';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
@@ -17,6 +19,8 @@ import {
 } from '@/modules/products/service';
 import { ProductGrid } from '@/modules/products/components/product-grid';
 import { ProductGridSkeleton } from '@/modules/products/components/product-grid-skeleton';
+import { WhatsappInquiryLink } from '@/modules/inquiries/components/whatsapp-inquiry-link';
+import { AddToQuoteListButton } from '@/modules/quote-list/components/add-to-quote-list-button';
 
 type ProductoPageProps = {
   params: Promise<{ slug: string }>;
@@ -62,7 +66,11 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
 
   const whatsappHref = buildWhatsAppUrl(
     contact.whatsapp,
-    `Hola, quiero cotizar: ${product.name}${product.sku ? ` (${product.sku})` : ''}.`,
+    buildProductInquiryMessage({
+      name: product.name,
+      sku: product.sku,
+      url: `${SITE_URL}/producto/${product.slug}`,
+    }),
   );
 
   return (
@@ -89,11 +97,30 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
               : `${product.priceIsFrom ? 'Desde ' : ''}${formatPrice(product.basePrice)}`}
           </p>
 
-          <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-            <Button variant="whatsapp" size="lg" className="w-full rounded-full sm:w-auto">
-              Cotizar por WhatsApp
-            </Button>
-          </a>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <WhatsappInquiryLink
+              href={whatsappHref}
+              source="WHATSAPP_PRODUCT"
+              productId={product.id}
+              productSnapshot={product.name}
+            >
+              <Button variant="whatsapp" size="lg" className="w-full rounded-full sm:w-auto">
+                Cotizar por WhatsApp
+              </Button>
+            </WhatsappInquiryLink>
+
+            <AddToQuoteListButton
+              product={{
+                productId: product.id,
+                slug: product.slug,
+                name: product.name,
+                sku: product.sku,
+                basePrice: product.basePrice,
+                priceIsFrom: product.priceIsFrom,
+                imageUrl: product.images[0]?.url ?? null,
+              }}
+            />
+          </div>
 
           {product.description ? (
             <p className="text-muted-foreground border-border border-t pt-6 text-sm whitespace-pre-line">
