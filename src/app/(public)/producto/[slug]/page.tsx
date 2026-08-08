@@ -1,0 +1,187 @@
+import { cache } from 'react';
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { contact } from '@/shared/data/mock/site';
+import { buildWhatsAppUrl, formatPrice } from '@/shared/lib/format-price';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Container } from '@/shared/ui/container';
+import { productSlugSchema } from '@/modules/products/schema';
+import {
+  getProductBySlug,
+  type ProductGalleryImage,
+  type ProductSpec,
+} from '@/modules/products/service';
+
+type ProductoPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+/**
+ * `cache()` deduplica dentro de un mismo request: sin esto, generateMetadata
+ * y la página consultarían la base por separado (Prisma no pasa por el
+ * fetch cache de Next, que solo deduplica llamadas a `fetch`).
+ * safeParse antes de tocar la base: un slug con formato inválido en la URL
+ * cae a "no encontrado" en vez de un error 500.
+ */
+const getProduct = cache(async (slug: string) => {
+  const parsed = productSlugSchema.safeParse(slug);
+  if (!parsed.success) return null;
+  return getProductBySlug(parsed.data);
+});
+
+export async function generateMetadata({ params }: ProductoPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+  if (!product) return {};
+
+  return {
+    title: `${product.name} | Idealo`,
+    description: product.shortDescription ?? undefined,
+  };
+}
+
+export default async function ProductoPage({ params }: ProductoPageProps) {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+
+  if (!product) notFound();
+
+  const whatsappHref = buildWhatsAppUrl(
+    contact.whatsapp,
+    `Hola, quiero cotizar: ${product.name}${product.sku ? ` (${product.sku})` : ''}.`,
+  );
+
+  return (
+    <Container className="py-16 md:py-24">
+      <Link href="/catalogo" className="text-muted-foreground hover:text-foreground text-sm">
+        ← Volver al catálogo
+      </Link>
+
+      <div className="mt-6 grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <ProductGallery images={product.images} productName={product.name} />
+
+        <div className="flex flex-col gap-6">
+          <div>
+            <Badge>{product.category.name}</Badge>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
+            {product.shortDescription ? (
+              <p className="text-muted-foreground mt-2 text-lg">{product.shortDescription}</p>
+            ) : null}
+          </div>
+
+          <p className="text-2xl font-semibold">
+            {product.basePrice === null
+              ? 'Precio a cotizar'
+              : `${product.priceIsFrom ? 'Desde ' : ''}${formatPrice(product.basePrice)}`}
+          </p>
+
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+            <Button variant="whatsapp" size="lg" className="w-full rounded-full sm:w-auto">
+              Cotizar por WhatsApp
+            </Button>
+          </a>
+
+          {product.description ? (
+            <p className="text-muted-foreground border-border border-t pt-6 text-sm whitespace-pre-line">
+              {product.description}
+            </p>
+          ) : null}
+
+          <ProductSpecs specs={product.specs} />
+
+          {product.customizationNotes || product.minOrderQuantity > 1 ? (
+            <div className="bg-secondary/40 rounded-2xl p-4 text-sm">
+              <p className="font-semibold">Notas de personalización</p>
+              {product.customizationNotes ? (
+                <p className="text-muted-foreground mt-1">{product.customizationNotes}</p>
+              ) : null}
+              {product.minOrderQuantity > 1 ? (
+                <p className="text-muted-foreground mt-1">
+                  Pedido mínimo: {product.minOrderQuantity} unidades.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Container>
+  );
+}
+
+function ProductGallery({
+  images,
+  productName,
+}: {
+  images: ProductGalleryImage[];
+  productName: string;
+}) {
+  const [primary, ...rest] = images;
+
+  if (!primary) {
+    return (
+      <div className="bg-muted border-border text-muted-foreground flex aspect-square items-center justify-center rounded-2xl border border-dashed">
+        <span className="text-xs tracking-[0.16em] uppercase">Foto próximamente</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="bg-muted relative aspect-square overflow-hidden rounded-2xl">
+        <Image
+          src={primary.url}
+          alt={primary.alt ?? productName}
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover"
+        />
+      </div>
+      {rest.length > 0 ? (
+        <div className="grid grid-cols-4 gap-3">
+          {rest.map((image) => (
+            <div
+              key={image.id}
+              className="bg-muted relative aspect-square overflow-hidden rounded-xl"
+            >
+              <Image
+                src={image.url}
+                alt={image.alt ?? productName}
+                fill
+                sizes="25vw"
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ProductSpecs({ specs }: { specs: ProductSpec[] }) {
+  if (specs.length === 0) return null;
+
+  return (
+    <dl className="grid grid-cols-1 gap-x-6 gap-y-2.5 text-sm sm:grid-cols-2">
+      {specs.map((spec) => (
+        <div key={spec.attributeSlug} className="flex items-center justify-between gap-3">
+          <dt className="text-muted-foreground">{spec.attributeName}</dt>
+          <dd className="flex items-center gap-2 font-medium">
+            {spec.hexColor ? (
+              <span
+                aria-hidden
+                className="border-border inline-block h-3 w-3 rounded-full border"
+                style={{ backgroundColor: spec.hexColor }}
+              />
+            ) : null}
+            {spec.value}
+            {spec.unit ? ` ${spec.unit}` : ''}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
