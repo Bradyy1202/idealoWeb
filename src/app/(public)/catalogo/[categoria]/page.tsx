@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
 import { Container } from '@/shared/ui/container';
 import { getCategoryDetailBySlug } from '@/modules/categories/service';
 import { getFilteredProducts } from '@/modules/products/service';
@@ -30,9 +31,19 @@ export async function generateMetadata({ params }: CategoriaPageProps): Promise<
   const category = await getCategoryDetailBySlug(categoria);
   if (!category) return {};
 
+  const title = category.metaTitle || category.name;
+  const description = category.metaDescription || category.description || undefined;
+
   return {
-    title: `${category.name} | Catálogo | Idealo`,
-    description: category.description ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `/catalogo/${category.slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/catalogo/${category.slug}`,
+      images: [DEFAULT_OG_IMAGE],
+    },
   };
 }
 

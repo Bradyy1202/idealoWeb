@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
 import {
   getContactSettings,
   getHeroSettings,
@@ -16,6 +18,11 @@ import { Hero } from './_components/hero';
 import { HowItWorksSection } from './_components/how-it-works-section';
 import { TestimonialsSection } from './_components/testimonials-section';
 import { TrustStrip } from './_components/trust-strip';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+  openGraph: { url: '/', images: [DEFAULT_OG_IMAGE] },
+};
 
 export default async function Home() {
   const [contact, hero, about, faqs, testimonials, galleryItems] = await Promise.all([

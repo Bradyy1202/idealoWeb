@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
 import { Container } from '@/shared/ui/container';
 import { getFilteredProducts } from '@/modules/products/service';
 import { DEFAULT_PAGE_SIZE, productSortSchema, type ProductSort } from '@/modules/products/schema';
@@ -10,8 +11,15 @@ import { Pagination } from '@/shared/ui/pagination';
 import { SearchInput } from './_components/search-input';
 
 export const metadata: Metadata = {
-  title: 'Catálogo | Idealo',
+  title: 'Catálogo',
   description: 'Explorá botellas, tazas, textiles y accesorios personalizados por sublimación.',
+  alternates: { canonical: '/catalogo' },
+  openGraph: {
+    title: 'Catálogo',
+    description: 'Explorá botellas, tazas, textiles y accesorios personalizados por sublimación.',
+    url: '/catalogo',
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 type CatalogoPageProps = {

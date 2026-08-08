@@ -114,6 +114,8 @@ export type ProductDetail = {
   currency: string;
   customizationNotes: string | null;
   minOrderQuantity: number;
+  metaTitle: string | null;
+  metaDescription: string | null;
   category: { id: string; name: string; slug: string };
   images: ProductGalleryImage[];
   specs: ProductSpec[];
@@ -138,6 +140,8 @@ function toProductDetail(row: ProductDetailRow): ProductDetail {
     currency: row.currency,
     customizationNotes: row.customizationNotes,
     minOrderQuantity: row.minOrderQuantity,
+    metaTitle: row.metaTitle,
+    metaDescription: row.metaDescription,
     category: row.category,
     images: row.images,
     specs: sortedAttributeValues.map(({ attributeValue }) => ({

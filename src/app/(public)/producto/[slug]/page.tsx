@@ -7,6 +7,7 @@ import { getContactSettings } from '@/modules/content/service';
 import { formatPrice } from '@/shared/lib/format-price';
 import { buildProductInquiryMessage, buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { SITE_URL } from '@/shared/lib/site-url';
+import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
@@ -44,9 +45,29 @@ export async function generateMetadata({ params }: ProductoPageProps): Promise<M
   const product = await getProduct(slug);
   if (!product) return {};
 
+  const title = product.metaTitle || product.name;
+  const description = product.metaDescription || product.shortDescription || undefined;
+  const primaryImage = product.images[0];
+
   return {
-    title: `${product.name} | Idealo`,
-    description: product.shortDescription ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `/producto/${product.slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/producto/${product.slug}`,
+      images: primaryImage
+        ? [
+            {
+              url: primaryImage.url,
+              width: primaryImage.width ?? undefined,
+              height: primaryImage.height ?? undefined,
+              alt: primaryImage.alt ?? product.name,
+            },
+          ]
+        : [DEFAULT_OG_IMAGE],
+    },
   };
 }
 

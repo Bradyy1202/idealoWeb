@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Poppins, Righteous } from 'next/font/google';
+import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
 import './globals.css';
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Idealo';
@@ -33,6 +34,10 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'es_CR',
     siteName,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
   },
 };
 

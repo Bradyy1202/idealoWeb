@@ -100,6 +100,8 @@ const productDetailSelect = {
   currency: true,
   customizationNotes: true,
   minOrderQuantity: true,
+  metaTitle: true,
+  metaDescription: true,
   category: { select: { id: true, name: true, slug: true } },
   images: {
     orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],

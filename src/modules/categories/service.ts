@@ -49,6 +49,8 @@ export type CategoryDetail = {
   slug: string;
   description: string | null;
   parentId: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
   /** La propia categoría + sus hijas directas. Usar tal cual para filtrar productos. */
   categoryIdsForFiltering: string[];
   filterableAttributes: FilterableAttribute[];
@@ -84,6 +86,8 @@ export async function getCategoryDetailBySlug(slugInput: unknown): Promise<Categ
     slug: category.slug,
     description: category.description,
     parentId: category.parentId,
+    metaTitle: category.metaTitle,
+    metaDescription: category.metaDescription,
     categoryIdsForFiltering: [category.id, ...category.children.map((child) => child.id)],
     filterableAttributes: category.attributes.map(({ attribute }) => ({
       id: attribute.id,

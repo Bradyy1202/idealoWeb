@@ -30,6 +30,8 @@ const categoryDetailSelect = {
   slug: true,
   description: true,
   parentId: true,
+  metaTitle: true,
+  metaDescription: true,
   children: {
     where: { isActive: true },
     select: { id: true },
