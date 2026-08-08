@@ -2,25 +2,15 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getProductCounts } from '@/modules/products/service';
 import { getCategoryCount } from '@/modules/categories/service';
-import { getNewInquiryCount, getRecentInquiries } from '@/modules/inquiries/service';
+import {
+  getNewInquiryCount,
+  getRecentInquiries,
+  inquirySourceLabels,
+  inquiryStatusLabels,
+} from '@/modules/inquiries/service';
 
 export const metadata: Metadata = {
   title: 'Panel | Idealo',
-};
-
-const sourceLabels: Record<string, string> = {
-  WHATSAPP_PRODUCT: 'WhatsApp (producto)',
-  WHATSAPP_FLOAT: 'WhatsApp (flotante)',
-  QUOTE_LIST: 'Lista de cotización',
-  CONTACT_FORM: 'Formulario de contacto',
-};
-
-const statusLabels: Record<string, string> = {
-  NEW: 'Nueva',
-  CONTACTED: 'Contactada',
-  QUOTED: 'Cotizada',
-  WON: 'Ganada',
-  LOST: 'Perdida',
 };
 
 function formatDate(date: Date) {
@@ -76,18 +66,25 @@ export default async function DashboardPage() {
         ) : (
           <ul className="border-border divide-border mt-4 divide-y rounded-2xl border">
             {recentInquiries.map((inquiry) => (
-              <li key={inquiry.id} className="flex items-center justify-between gap-4 p-4">
-                <div className="min-w-0">
-                  <p className="truncate font-medium">
-                    {inquiry.customerName ?? inquiry.itemsSummary ?? sourceLabels[inquiry.source]}
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    {sourceLabels[inquiry.source]} · {formatDate(inquiry.createdAt)}
-                  </p>
-                </div>
-                <span className="bg-secondary shrink-0 rounded-full px-3 py-1 text-xs font-medium">
-                  {statusLabels[inquiry.status]}
-                </span>
+              <li key={inquiry.id}>
+                <Link
+                  href={`/admin/consultas/${inquiry.id}`}
+                  className="hover:bg-accent flex items-center justify-between gap-4 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">
+                      {inquiry.customerName ??
+                        inquiry.itemsSummary ??
+                        inquirySourceLabels[inquiry.source]}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      {inquirySourceLabels[inquiry.source]} · {formatDate(inquiry.createdAt)}
+                    </p>
+                  </div>
+                  <span className="bg-secondary shrink-0 rounded-full px-3 py-1 text-xs font-medium">
+                    {inquiryStatusLabels[inquiry.status]}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>

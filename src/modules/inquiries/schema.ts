@@ -44,3 +44,40 @@ export const contactFormSchema = z.object({
 });
 
 export type ContactFormInput = z.infer<typeof contactFormSchema>;
+
+// ---------------------------------------------------------------------------
+// Panel de administración (tarea 4.13): bandeja de consultas.
+// ---------------------------------------------------------------------------
+
+// Mismos valores que el enum InquiryStatus de prisma/schema.prisma.
+export const inquiryStatusSchema = z.enum(['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST']);
+
+export type InquiryStatusInput = z.infer<typeof inquiryStatusSchema>;
+
+const DEFAULT_INQUIRY_PAGE_SIZE = 20;
+const MAX_INQUIRY_PAGE_SIZE = 60;
+
+export const inquiryAdminFiltersSchema = z.object({
+  status: z.enum(['all', 'NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST']).default('all'),
+  source: z
+    .enum(['all', 'WHATSAPP_PRODUCT', 'WHATSAPP_FLOAT', 'QUOTE_LIST', 'CONTACT_FORM'])
+    .default('all'),
+  q: z.string().trim().max(120).optional(),
+  skip: z.coerce.number().int().min(0).default(0),
+  take: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_INQUIRY_PAGE_SIZE)
+    .default(DEFAULT_INQUIRY_PAGE_SIZE),
+});
+
+export type InquiryAdminFilters = z.infer<typeof inquiryAdminFiltersSchema>;
+
+export const updateInquiryStatusSchema = z.object({
+  status: inquiryStatusSchema,
+});
+
+export const updateInquiryNotesSchema = z.object({
+  adminNotes: z.string().trim().max(2000).optional(),
+});

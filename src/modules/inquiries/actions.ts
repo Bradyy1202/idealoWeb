@@ -1,8 +1,9 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { contactFormSchema, type InquirySourceInput } from './schema';
-import { registerInquiry } from './service';
+import { registerInquiry, updateInquiryStatus, updateInquiryNotes } from './service';
 
 type WhatsAppClickInput = {
   source: Extract<InquirySourceInput, 'WHATSAPP_PRODUCT' | 'WHATSAPP_FLOAT'>;
@@ -114,4 +115,41 @@ export async function submitContactFormAction(
   }
 
   return { status: 'success' };
+}
+
+// ---------------------------------------------------------------------------
+// Panel de administración (tarea 4.13): bandeja de consultas. Se llaman
+// directamente desde un <select onChange> y un botón type="button" (nunca
+// desde un <form action>), así que no corren riesgo de perder la sesión —
+// ver el comentario junto a las acciones de categorías/atributos/productos.
+// ---------------------------------------------------------------------------
+
+export async function updateInquiryStatusAction(
+  id: string,
+  status: string,
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    await updateInquiryStatus(id, { status });
+  } catch (error) {
+    console.error('No se pudo actualizar el estado de la consulta', error);
+    return { ok: false, message: 'No se pudo actualizar el estado.' };
+  }
+  revalidatePath('/admin/consultas');
+  revalidatePath(`/admin/consultas/${id}`);
+  revalidatePath('/admin');
+  return { ok: true };
+}
+
+export async function updateInquiryNotesAction(
+  id: string,
+  adminNotes: string,
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    await updateInquiryNotes(id, { adminNotes });
+  } catch (error) {
+    console.error('No se pudo guardar la nota', error);
+    return { ok: false, message: 'No se pudo guardar la nota.' };
+  }
+  revalidatePath(`/admin/consultas/${id}`);
+  return { ok: true };
 }
