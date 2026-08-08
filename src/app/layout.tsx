@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins, Righteous } from 'next/font/google';
 import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
+import { GoogleAnalytics } from '@/shared/ui/google-analytics';
 import './globals.css';
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Idealo';
@@ -39,12 +40,20 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
   },
+  // Sin variable todavía: se completa cuando la usuaria verifique el sitio en
+  // Google Search Console y cargue el token en NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es-CR" className={`${righteous.variable} ${poppins.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <GoogleAnalytics />
+      </body>
     </html>
   );
 }
