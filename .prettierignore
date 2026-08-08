@@ -1,0 +1,16 @@
+# Artefactos de compilación
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+src/generated/
+
+# Herramientas instaladas de agentes: código de terceros que el CI no debe
+# formatear ni auditar. Se versiona tal cual lo publica el skill.
+.claude/
+.github/skills/
+.github/agents/
+.github/hooks/
+.impeccable/
+skills-lock.json
