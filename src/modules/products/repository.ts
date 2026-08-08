@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/lib/prisma';
-import type { ProductFilters } from './schema';
+import type { ProductFilters, ProductSort } from './schema';
 
 const productListSelect = {
   id: true,
@@ -52,11 +52,19 @@ export function buildProductWhere(filters: ProductFilterFields): Prisma.ProductW
   return where;
 }
 
+const productOrderByMap: Record<ProductSort, Prisma.ProductOrderByWithRelationInput[]> = {
+  featured: [{ sortOrder: 'asc' }, { name: 'asc' }],
+  'name-asc': [{ name: 'asc' }],
+  'price-asc': [{ basePrice: 'asc' }, { name: 'asc' }],
+  'price-desc': [{ basePrice: 'desc' }, { name: 'asc' }],
+  newest: [{ createdAt: 'desc' }],
+};
+
 export async function findManyByFilters(filters: ProductFilters): Promise<ProductListRow[]> {
   return prisma.product.findMany({
     where: buildProductWhere(filters),
     select: productListSelect,
-    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    orderBy: productOrderByMap[filters.sort],
     skip: filters.skip,
     take: filters.take,
   });
