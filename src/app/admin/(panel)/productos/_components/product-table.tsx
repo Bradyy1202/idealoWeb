@@ -62,7 +62,7 @@ export function ProductTable({ items }: { items: ProductAdminListItem[] }) {
                   className={cn(
                     'rounded-full px-2.5 py-1 text-xs font-medium',
                     product.isActive
-                      ? 'bg-secondary text-secondary-foreground'
+                      ? 'bg-success text-success-foreground'
                       : 'bg-muted text-muted-foreground',
                   )}
                 >

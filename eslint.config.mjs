@@ -32,6 +32,7 @@ const eslintConfig = defineConfig([
     // Herramientas instaladas de agentes: código de terceros que el CI no
     // debe auditar. Se versiona tal cual lo publica el skill.
     '.claude/**',
+    '.agents/**',
     '.github/skills/**',
     '.github/agents/**',
     '.github/hooks/**',

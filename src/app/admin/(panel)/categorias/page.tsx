@@ -74,7 +74,7 @@ function CategoryRow({
             className={cn(
               'ml-2 rounded-full px-2 py-0.5 text-xs font-medium',
               category.isActive
-                ? 'bg-secondary text-secondary-foreground'
+                ? 'bg-success text-success-foreground'
                 : 'bg-muted text-muted-foreground',
             )}
           >

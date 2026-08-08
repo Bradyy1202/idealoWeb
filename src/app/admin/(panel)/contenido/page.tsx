@@ -58,7 +58,7 @@ export default async function ContenidoPage() {
             className="border-border hover:bg-accent flex items-center gap-4 rounded-2xl border p-5 transition-colors"
           >
             <div className="bg-primary/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
-              <section.icon className="text-primary h-5 w-5" />
+              <section.icon className="text-primary-text h-5 w-5" />
             </div>
             <div>
               <h2 className="font-semibold">{section.title}</h2>

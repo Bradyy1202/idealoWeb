@@ -48,7 +48,7 @@ export function SectionHeading({
   return (
     <div className={cn('flex flex-col items-center space-y-3 pb-12 text-center', className)}>
       {eyebrow ? (
-        <span className="text-primary text-sm font-semibold tracking-wide uppercase">
+        <span className="text-primary-text text-sm font-semibold tracking-wide uppercase">
           {eyebrow}
         </span>
       ) : null}

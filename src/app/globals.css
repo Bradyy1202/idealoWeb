@@ -1,22 +1,23 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Sistema de diseño — segunda pasada, sobre referencia real del cliente
-   (valencianoproducciones.com): tipografía redondeada y cálida, degradé
-   pastel suave, botones tipo píldora, tarjetas con borde tenue del color de
-   marca, chips de ícono con tinte, círculos numerados sólidos. Sin panel
-   bordeado envolviendo cada sección — eso es lo que hacía sentir la primera
-   pasada como plantilla corporativa genérica.
+   Sistema de diseño — tercera pasada, sobre dos referencias reales elegidas
+   por la dueña (riseatseven.com, releaf.bio): tipografía grande y segura,
+   bloques de sección que alternan tinta oscura y lienzo cálido, un solo
+   acento de color, tarjetas de esquina muy redondeada. La paleta sale del
+   propio oficio de la sublimación — tinta sobre una superficie en blanco —
+   no de una plantilla genérica. Ver docs/adr para el detalle completo.
 
-   Colores de marca de Idealo (no los de Valenciano, que es un negocio
-   distinto): azul y tinta oscura, tal como aparecen en public/logoIdealo.svg.
+   Sin dark mode todavía: la variante está declarada para cuando se agregue,
+   pero hoy no hay ningún bloque `.dark` que la use.
 --------------------------------------------------------------------------- */
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: var(--font-righteous), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-karla), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -26,6 +27,11 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  /* Variante oscura de primary para texto/íconos sobre fondo claro: la
+     caléndula del botón (#e8a33d) da 1.8:1 como texto sobre el lienzo, muy
+     por debajo del mínimo de 4.5:1 — nunca usar `text-primary` para texto
+     legible o íconos, solo `text-primary-text`. */
+  --color-primary-text: var(--primary-text);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -37,42 +43,75 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Estado "activo"/"éxito" en el panel — deliberadamente distinto de
+     primary y berry: es información semántica (algo está bien), no un
+     acento de marca. Sin esto, "Activo" e "Inactivo" solo se distinguen
+     por el texto, no por la forma del chip. */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  /* Segundo acento de marca, aparte de primary: etiquetas y detalles
+     puntuales, nunca botones de acción (esos son primary o whatsapp). */
+  --color-berry: var(--berry);
+  --color-berry-foreground: var(--berry-foreground);
+
+  /* Bloque de contraste oscuro para secciones tipo "hero" o cierre, el
+     mismo tono que --foreground pero como fondo, no solo como texto. */
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 6px);
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 1.25rem;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.2 0.03 264);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.03 264);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.03 264);
+  /* Lienzo: el blanco de una superficie antes de sublimar, no un blanco frío. */
+  --background: #f1e9d8;
+  --foreground: #232821;
+  /* Papel: superficie de tarjeta, un tono más clara que el lienzo de fondo. */
+  --card: #fbf6ea;
+  --card-foreground: #232821;
+  --popover: #fbf6ea;
+  --popover-foreground: #232821;
 
-  /* Azul de marca, tal como aparece en public/logoIdealo.svg. */
-  --primary: oklch(0.47 0.22 264);
-  --primary-foreground: oklch(0.98 0 0);
+  /* Caléndula: único acento de marca para CTA y estados activos. Texto
+     oscuro encima (no blanco): sobre un amarillo cálido el blanco no llega
+     al contraste mínimo de 4.5:1. */
+  --primary: #e8a33d;
+  --primary-foreground: #16333a;
+  /* Misma familia, más oscura: 4.6–5.2:1 sobre el lienzo y la tarjeta. */
+  --primary-text: #96591a;
 
-  --secondary: oklch(0.97 0.01 264);
-  --secondary-foreground: oklch(0.2 0.03 264);
-  --muted: oklch(0.97 0.01 264);
-  --muted-foreground: oklch(0.5 0.03 264);
-  --accent: oklch(0.94 0.03 264);
-  --accent-foreground: oklch(0.2 0.03 264);
-  --destructive: oklch(0.577 0.245 27.325);
+  --secondary: #e7dcc5;
+  --secondary-foreground: #232821;
+  --muted: #e7dcc5;
+  --muted-foreground: #6d6656;
+  --accent: #ead9be;
+  --accent-foreground: #232821;
+  --destructive: #c23b3b;
 
-  /* Borde tenue con tinte de marca, como el rojo-200 de la referencia. */
-  --border: oklch(0.9 0.03 264);
-  --input: oklch(0.9 0.03 264);
-  --ring: oklch(0.47 0.22 264 / 0.5);
+  /* Musgo, no un verde genérico: se lleva bien con la caléndula y la tinta
+     sin competir con ellas por atención. */
+  --success: #dfe6cc;
+  --success-foreground: #3f5133;
+
+  --border: #ddd0b4;
+  --input: #ddd0b4;
+  --ring: #e8a33d;
 
   /* WhatsApp: única acción que usa este verde en todo el sitio. */
   --whatsapp: oklch(0.72 0.19 149);
   --whatsapp-foreground: oklch(0.145 0 0);
+
+  --berry: #b23a63;
+  --berry-foreground: #f1e9d8;
+
+  --ink: #16333a;
+  --ink-foreground: #f1e9d8;
 }
 
 @layer base {
@@ -98,11 +137,19 @@
   h3,
   h4 {
     font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
   }
 
-  [data-numeral] {
+  [data-numeral],
+  [data-sku] {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
+  }
+
+  [data-sku] {
+    font-family: var(--font-mono);
   }
 }
 

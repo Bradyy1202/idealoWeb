@@ -49,7 +49,10 @@ export default async function TestimoniosPage() {
                   {testimonial.rating ? (
                     <span className="flex items-center gap-0.5">
                       {testimonial.rating}
-                      <Star className="fill-primary text-primary h-3 w-3" strokeWidth={0} />
+                      <Star
+                        className="fill-primary-text text-primary-text h-3 w-3"
+                        strokeWidth={0}
+                      />
                     </span>
                   ) : null}
                   {testimonial.rating ? '·' : null} {testimonial.isActive ? 'Activo' : 'Inactivo'}

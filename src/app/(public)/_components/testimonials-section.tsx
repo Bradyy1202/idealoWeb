@@ -18,13 +18,13 @@ const itemFadeIn = {
 function RatingStars({ rating }: { rating: number }) {
   return (
     <>
-      <div className="text-primary flex gap-0.5" aria-hidden>
+      <div className="text-primary-text flex gap-0.5" aria-hidden>
         {Array.from({ length: 5 }).map((_, index) => (
           <Star
             key={index}
             size={16}
             strokeWidth={0}
-            className={index < rating ? 'fill-primary' : 'fill-muted'}
+            className={index < rating ? 'fill-primary-text' : 'fill-muted'}
           />
         ))}
       </div>

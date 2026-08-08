@@ -39,7 +39,9 @@ export function InquiryNotesForm({
         <Button type="button" variant="outline" onClick={handleSave} disabled={isPending}>
           {isPending ? 'Guardando...' : 'Guardar nota'}
         </Button>
-        {savedMessage ? <span className="text-primary text-sm">{savedMessage}</span> : null}
+        {savedMessage ? (
+          <span className="text-success-foreground text-sm">{savedMessage}</span>
+        ) : null}
         {error ? <span className="text-destructive text-sm">{error}</span> : null}
       </div>
     </div>

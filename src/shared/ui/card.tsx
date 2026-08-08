@@ -23,14 +23,14 @@ export function ProductCard({ product, whatsapp }: { product: Product; whatsapp:
       // fila (la más alta), pero sin esto el <a> no la ocupa — con distintos
       // aspect-ratio de foto por producto, las tarjetas quedaban de alturas
       // dispares y los pies (precio/CTA) desalineados entre sí.
-      className="group border-border bg-card flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+      className="group border-border bg-card flex h-full flex-col overflow-hidden rounded-3xl border transition-shadow hover:shadow-md"
     >
       {/* RANURA RESERVADA para la fotografía del producto.
           Sustituir por <Image> conservando `aspect`. */}
       <div className="bg-muted p-6">
         <div
           style={{ aspectRatio: product.aspect }}
-          className="border-border text-muted-foreground mx-auto flex max-h-64 items-center justify-center rounded-2xl border border-dashed text-center"
+          className="border-border text-muted-foreground mx-auto flex max-h-64 items-center justify-center rounded-3xl border border-dashed text-center"
         >
           <span className="text-[0.625rem] tracking-[0.16em] uppercase">Foto de producto</span>
         </div>
@@ -47,7 +47,7 @@ export function ProductCard({ product, whatsapp }: { product: Product; whatsapp:
           <p data-numeral className="text-sm font-semibold">
             Desde {formatPrice(product.basePrice)}
           </p>
-          <span className="text-primary text-sm font-medium underline-offset-4 group-hover:underline">
+          <span className="text-primary-text text-sm font-medium underline-offset-4 group-hover:underline">
             Cotizar →
           </span>
         </div>

@@ -21,7 +21,7 @@ export function AboutSection({ about }: { about: AboutSettingsInput }) {
           transition={{ duration: 0.6 }}
           className="space-y-4"
         >
-          <span className="text-primary text-sm font-semibold tracking-wide uppercase">
+          <span className="text-primary-text text-sm font-semibold tracking-wide uppercase">
             Quiénes somos
           </span>
           <h2 className="text-3xl tracking-tight sm:text-4xl">{about.title}</h2>

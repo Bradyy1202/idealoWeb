@@ -51,7 +51,7 @@ export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: st
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="max-w-[16ch] text-4xl tracking-tight sm:text-5xl xl:text-6xl"
+          className="max-w-[16ch] text-5xl tracking-tight sm:text-6xl xl:text-7xl"
         >
           {hero.title}
         </motion.h1>

@@ -43,7 +43,7 @@ export function TrustStrip() {
             className="flex flex-col items-center gap-3 text-center"
           >
             <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
-              <fact.icon className="text-primary h-6 w-6" />
+              <fact.icon className="text-primary-text h-6 w-6" />
             </div>
             <p className="text-sm font-medium">{fact.label}</p>
           </motion.div>

@@ -49,7 +49,7 @@ export function CategoriesSection() {
               className="border-border bg-card rounded-2xl border p-6"
             >
               <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
-                <Icon className="text-primary h-6 w-6" />
+                <Icon className="text-primary-text h-6 w-6" />
               </div>
 
               <h3 className="mt-4 text-xl font-semibold">{category.name}</h3>
@@ -58,7 +58,7 @@ export function CategoriesSection() {
               <ul className="mt-4 space-y-1.5">
                 {category.facts.map((fact) => (
                   <li key={fact} className="flex items-center gap-2 text-sm">
-                    <Check className="text-primary h-4 w-4 shrink-0" />
+                    <Check className="text-primary-text h-4 w-4 shrink-0" />
                     {fact}
                   </li>
                 ))}

@@ -41,7 +41,7 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           transition={{ duration: 0.6 }}
           className="space-y-4"
         >
-          <span className="text-primary text-sm font-semibold tracking-wide uppercase">
+          <span className="text-primary-text text-sm font-semibold tracking-wide uppercase">
             Contacto
           </span>
           <h2 className="text-3xl tracking-tight md:text-4xl">Trabajemos juntos</h2>
@@ -58,7 +58,7 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
                 className="flex items-center gap-3"
               >
                 <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl">
-                  <point.icon className="text-primary h-5 w-5" />
+                  <point.icon className="text-primary-text h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="text-sm font-medium">{point.label}</h3>

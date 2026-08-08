@@ -53,7 +53,7 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-semibold">Últimas consultas</h2>
           <Link
             href="/admin/consultas"
-            className="text-primary text-sm font-medium hover:underline"
+            className="text-primary-text text-sm font-medium hover:underline"
           >
             Ver todas
           </Link>

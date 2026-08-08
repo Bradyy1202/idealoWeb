@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
   return (
     <Link
       href={`/producto/${product.slug}`}
-      className="group border-border bg-card flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+      className="group border-border bg-card flex h-full flex-col overflow-hidden rounded-3xl border transition-shadow hover:shadow-md"
     >
       <div className="bg-muted relative aspect-square overflow-hidden">
         {product.primaryImage ? (
@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
               ? 'Precio a cotizar'
               : `${product.priceIsFrom ? 'Desde ' : ''}${formatPrice(product.basePrice)}`}
           </p>
-          <span className="text-primary text-sm font-medium underline-offset-4 group-hover:underline">
+          <span className="text-primary-text text-sm font-medium underline-offset-4 group-hover:underline">
             Ver más →
           </span>
         </div>

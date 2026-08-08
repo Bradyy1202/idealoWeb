@@ -66,7 +66,7 @@ export default async function ConsultaPage({ params }: ConsultaPageProps) {
                     {item.productId ? (
                       <Link
                         href={`/admin/productos/${item.productId}/editar`}
-                        className="text-primary shrink-0 text-xs font-medium hover:underline"
+                        className="text-primary-text shrink-0 text-xs font-medium hover:underline"
                       >
                         Ver producto
                       </Link>

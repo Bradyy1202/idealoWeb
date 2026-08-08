@@ -78,7 +78,7 @@ export function AboutSettingsForm({ initialValues }: { initialValues: AboutSetti
         <p className="text-destructive text-sm">{state.message}</p>
       ) : null}
       {state.status === 'success' ? (
-        <p className="text-primary text-sm font-medium">{state.message}</p>
+        <p className="text-success-foreground text-sm font-medium">{state.message}</p>
       ) : null}
 
       <div>
