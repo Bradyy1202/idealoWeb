@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
+import { buildBreadcrumbJsonLd } from '@/shared/lib/json-ld-builders';
 import { Container } from '@/shared/ui/container';
+import { JsonLd } from '@/shared/ui/json-ld';
 import { getCategoryDetailBySlug } from '@/modules/categories/service';
 import { getFilteredProducts } from '@/modules/products/service';
 import { DEFAULT_PAGE_SIZE, productSortSchema, type ProductSort } from '@/modules/products/schema';
@@ -75,6 +77,14 @@ export default async function CategoriaPage({ params, searchParams }: CategoriaP
 
   return (
     <Container className="py-16 md:py-24">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Inicio', url: '/' },
+          { name: 'Catálogo', url: '/catalogo' },
+          { name: category.name, url: `/catalogo/${category.slug}` },
+        ])}
+      />
+
       <Link href="/catalogo" className="text-muted-foreground hover:text-foreground text-sm">
         ← Ver todo el catálogo
       </Link>

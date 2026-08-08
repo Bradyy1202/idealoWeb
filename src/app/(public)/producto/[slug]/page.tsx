@@ -8,9 +8,11 @@ import { formatPrice } from '@/shared/lib/format-price';
 import { buildProductInquiryMessage, buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { SITE_URL } from '@/shared/lib/site-url';
 import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
+import { buildBreadcrumbJsonLd, buildProductJsonLd } from '@/shared/lib/json-ld-builders';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
+import { JsonLd } from '@/shared/ui/json-ld';
 import { productSlugSchema } from '@/modules/products/schema';
 import {
   getProductBySlug,
@@ -97,6 +99,16 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
 
   return (
     <Container className="py-16 md:py-24">
+      <JsonLd data={buildProductJsonLd(product)} />
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Inicio', url: '/' },
+          { name: 'Catálogo', url: '/catalogo' },
+          { name: product.category.name, url: `/catalogo/${product.category.slug}` },
+          { name: product.name, url: `/producto/${product.slug}` },
+        ])}
+      />
+
       <Link href="/catalogo" className="text-muted-foreground hover:text-foreground text-sm">
         ← Volver al catálogo
       </Link>
