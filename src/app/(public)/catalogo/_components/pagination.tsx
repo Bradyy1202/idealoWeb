@@ -4,9 +4,14 @@ type PaginationProps = {
   page: number;
   totalPages: number;
   searchParams: Record<string, string | string[] | undefined>;
+  basePath: string;
 };
 
-function buildHref(page: number, searchParams: Record<string, string | string[] | undefined>) {
+function buildHref(
+  basePath: string,
+  page: number,
+  searchParams: Record<string, string | string[] | undefined>,
+) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(searchParams)) {
     if (key === 'pagina' || value === undefined) continue;
@@ -19,11 +24,11 @@ function buildHref(page: number, searchParams: Record<string, string | string[] 
   if (page > 1) params.set('pagina', String(page));
 
   const query = params.toString();
-  return query ? `/catalogo?${query}` : '/catalogo';
+  return query ? `${basePath}?${query}` : basePath;
 }
 
 /** Enlaces reales (no botones con JS): funciona sin cliente y es rastreable por buscadores. */
-export function Pagination({ page, totalPages, searchParams }: PaginationProps) {
+export function Pagination({ page, totalPages, searchParams, basePath }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const linkClassName =
@@ -37,7 +42,7 @@ export function Pagination({ page, totalPages, searchParams }: PaginationProps) 
       className="flex items-center justify-center gap-4 pt-12"
     >
       {page > 1 ? (
-        <Link href={buildHref(page - 1, searchParams)} className={linkClassName}>
+        <Link href={buildHref(basePath, page - 1, searchParams)} className={linkClassName}>
           ← Anterior
         </Link>
       ) : (
@@ -49,7 +54,7 @@ export function Pagination({ page, totalPages, searchParams }: PaginationProps) 
       </span>
 
       {page < totalPages ? (
-        <Link href={buildHref(page + 1, searchParams)} className={linkClassName}>
+        <Link href={buildHref(basePath, page + 1, searchParams)} className={linkClassName}>
           Siguiente →
         </Link>
       ) : (

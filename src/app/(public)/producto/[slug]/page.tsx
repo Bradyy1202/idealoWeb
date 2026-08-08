@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { cache, Suspense } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,9 +11,12 @@ import { Container } from '@/shared/ui/container';
 import { productSlugSchema } from '@/modules/products/schema';
 import {
   getProductBySlug,
+  getRelatedProducts,
   type ProductGalleryImage,
   type ProductSpec,
 } from '@/modules/products/service';
+import { ProductGrid } from '@/modules/products/components/product-grid';
+import { ProductGridSkeleton } from '@/modules/products/components/product-grid-skeleton';
 
 type ProductoPageProps = {
   params: Promise<{ slug: string }>;
@@ -47,6 +50,14 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
   const { slug } = await params;
   const product = await getProduct(slug);
 
+  // No agregar loading.tsx a esta ruta (ni a producto/ ni a un ancestro):
+  // Next.js empieza a streamear el shell con status 200 en cuanto existe un
+  // boundary de Suspense a nivel de archivo, y ya no puede corregirlo a 404
+  // cuando notFound() resuelve después. Sin loading.tsx el response se
+  // retiene hasta saber si es 200 o 404 (verificado con curl contra el
+  // build de producción). El Suspense de "también te puede interesar" más
+  // abajo es de componente y se resuelve después de este chequeo: no tiene
+  // ese problema, porque el contenido principal ya se decidió por completo.
   if (!product) notFound();
 
   const whatsappHref = buildWhatsAppUrl(
@@ -107,7 +118,37 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
           ) : null}
         </div>
       </div>
+
+      <Suspense
+        fallback={
+          <div className="border-border mt-16 border-t pt-16">
+            <ProductGridSkeleton count={4} />
+          </div>
+        }
+      >
+        <RelatedProducts productId={product.id} categoryId={product.category.id} />
+      </Suspense>
     </Container>
+  );
+}
+
+async function RelatedProducts({
+  productId,
+  categoryId,
+}: {
+  productId: string;
+  categoryId: string;
+}) {
+  const relatedProducts = await getRelatedProducts(productId, categoryId);
+  if (relatedProducts.length === 0) return null;
+
+  return (
+    <div className="border-border mt-16 border-t pt-16">
+      <h2 className="text-2xl font-bold tracking-tight">También te puede interesar</h2>
+      <div className="mt-8">
+        <ProductGrid items={relatedProducts} />
+      </div>
+    </div>
   );
 }
 

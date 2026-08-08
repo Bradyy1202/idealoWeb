@@ -64,7 +64,7 @@ export function CategoriesSection() {
                 ))}
               </ul>
 
-              <Link href="/catalogo" className="mt-5 block">
+              <Link href={`/catalogo/${category.slug}`} className="mt-5 block">
                 <Button variant="outline" size="sm" className="rounded-full">
                   Ver catálogo
                 </Button>
