@@ -44,7 +44,7 @@ export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: st
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Logo height={72} className="mb-6 md:mb-8" />
+          <Logo height={72} priority className="mb-6 md:mb-8" />
         </motion.div>
 
         <motion.h1
