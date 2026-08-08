@@ -22,7 +22,21 @@ const eslintConfig = defineConfig([
     files: ['prisma/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
-  globalIgnores(['.next/**', 'node_modules/**', 'src/generated/**']),
+  globalIgnores([
+    '.next/**',
+    'node_modules/**',
+    'src/generated/**',
+    'coverage/**',
+    'playwright-report/**',
+    'test-results/**',
+    // Herramientas instaladas de agentes: código de terceros que el CI no
+    // debe auditar. Se versiona tal cual lo publica el skill.
+    '.claude/**',
+    '.github/skills/**',
+    '.github/agents/**',
+    '.github/hooks/**',
+    '.impeccable/**',
+  ]),
 ]);
 
 export default eslintConfig;
