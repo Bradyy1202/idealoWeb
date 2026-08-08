@@ -3,13 +3,13 @@
 import { useActionState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Phone } from 'lucide-react';
-import { contact } from '@/shared/data/mock/site';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 import { Section } from '@/shared/ui/section';
 import { submitContactFormAction, type ContactFormState } from '@/modules/inquiries/actions';
+import type { ContactSettingsInput } from '@/modules/content/schema';
 
 const initialState: ContactFormState = { status: 'idle' };
 
@@ -20,14 +20,16 @@ function formatPhone(raw: string) {
   return `+${country} ${rest.slice(0, 4)} ${rest.slice(4)}`;
 }
 
-const contactPoints = [
-  { icon: MapPin, label: 'Ubicación', value: contact.location },
-  { icon: Mail, label: 'Correo', value: contact.email },
-  { icon: Phone, label: 'WhatsApp', value: formatPhone(contact.whatsapp), numeral: true },
-];
-
-export function ContactSection() {
+export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
   const [state, formAction, isPending] = useActionState(submitContactFormAction, initialState);
+
+  const contactPoints = [
+    ...(contact.location
+      ? [{ icon: MapPin, label: 'Ubicación', value: contact.location, numeral: false }]
+      : []),
+    { icon: Mail, label: 'Correo', value: contact.email, numeral: false },
+    { icon: Phone, label: 'WhatsApp', value: formatPhone(contact.whatsapp), numeral: true },
+  ];
 
   return (
     <Section id="contacto" className="overflow-hidden">

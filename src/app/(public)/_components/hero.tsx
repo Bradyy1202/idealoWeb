@@ -4,16 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { contact, hero } from '@/shared/data/mock/site';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Button } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
 import { Logo } from '@/shared/ui/logo';
-
-const whatsappHref = buildWhatsAppUrl(
-  contact.whatsapp,
-  'Hola, quiero cotizar productos personalizados.',
-);
+import type { HeroSettingsInput } from '@/modules/content/schema';
 
 /**
  * La foto (public/hero.png) es una imagen de referencia/ambiente, no una
@@ -24,7 +19,9 @@ const whatsappHref = buildWhatsAppUrl(
  * velo claro detrás para que el texto (en la tinta oscura de siempre, no
  * blanco) siga leyéndose sobre una foto de por sí clara.
  */
-export function Hero() {
+export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: string }) {
+  const whatsappHref = buildWhatsAppUrl(whatsapp, 'Hola, quiero cotizar productos personalizados.');
+
   return (
     <section className="relative w-full overflow-hidden">
       <div className="absolute inset-0">

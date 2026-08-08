@@ -1,16 +1,15 @@
 import { MessageCircle } from 'lucide-react';
-import { contact } from '@/shared/data/mock/site';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { WhatsappInquiryLink } from '@/modules/inquiries/components/whatsapp-inquiry-link';
-
-const whatsappHref = buildWhatsAppUrl(contact.whatsapp, 'Hola, quiero más información.');
 
 /**
  * Botón flotante global. Sin estado ni scroll listener: se queda fijo en
  * pantalla en vez de aparecer condicionalmente, así nunca compite con el CTA
  * de la sección de contacto por un mecanismo de aparición.
  */
-export function WhatsappFloatButton() {
+export function WhatsappFloatButton({ whatsapp }: { whatsapp: string }) {
+  const whatsappHref = buildWhatsAppUrl(whatsapp, 'Hola, quiero más información.');
+
   return (
     <WhatsappInquiryLink
       href={whatsappHref}

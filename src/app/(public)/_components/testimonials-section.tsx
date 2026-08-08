@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
-import { testimonials } from '@/shared/data/mock/site';
 import { Section, SectionHeading } from '@/shared/ui/section';
+import type { TestimonialItem } from '@/modules/content/service';
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -15,7 +15,27 @@ const itemFadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export function TestimonialsSection() {
+function RatingStars({ rating }: { rating: number }) {
+  return (
+    <>
+      <div className="text-primary flex gap-0.5" aria-hidden>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Star
+            key={index}
+            size={16}
+            strokeWidth={0}
+            className={index < rating ? 'fill-primary' : 'fill-muted'}
+          />
+        ))}
+      </div>
+      <p className="sr-only">Calificación: {rating} de 5 estrellas.</p>
+    </>
+  );
+}
+
+export function TestimonialsSection({ testimonials }: { testimonials: TestimonialItem[] }) {
+  if (testimonials.length === 0) return null;
+
   return (
     <Section id="testimonios" className="bg-secondary/60">
       <SectionHeading eyebrow="Testimonios" title="Lo que dicen quienes ya pidieron" />
@@ -29,30 +49,22 @@ export function TestimonialsSection() {
       >
         {testimonials.map((item) => (
           <motion.figure
-            key={item.authorName}
+            key={item.id}
             variants={itemFadeIn}
             whileHover={{ y: -8 }}
             className="border-border bg-background flex flex-col justify-between rounded-2xl border p-6"
           >
             <div>
-              <div className="text-primary flex gap-0.5" aria-hidden>
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Star
-                    key={index}
-                    size={16}
-                    strokeWidth={0}
-                    className={index < item.rating ? 'fill-primary' : 'fill-muted'}
-                  />
-                ))}
-              </div>
-              <p className="sr-only">Calificación: {item.rating} de 5 estrellas.</p>
+              {item.rating ? <RatingStars rating={item.rating} /> : null}
               <blockquote className="mt-4 line-clamp-4 text-base leading-relaxed font-medium">
                 “{item.content}”
               </blockquote>
             </div>
             <figcaption className="mt-6">
               <p className="font-medium">{item.authorName}</p>
-              <p className="text-muted-foreground text-sm">{item.authorLocation}</p>
+              {item.authorLocation ? (
+                <p className="text-muted-foreground text-sm">{item.authorLocation}</p>
+              ) : null}
             </figcaption>
           </motion.figure>
         ))}

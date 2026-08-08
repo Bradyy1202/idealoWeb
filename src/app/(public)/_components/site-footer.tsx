@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { contact } from '@/shared/data/mock/site';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Container } from '@/shared/ui/container';
 import { Button } from '@/shared/ui/button';
 import { Logo } from '@/shared/ui/logo';
+import type { ContactSettingsInput } from '@/modules/content/schema';
 
 const navigation = [
   { label: 'Catálogo', href: '/catalogo' },
@@ -13,8 +13,6 @@ const navigation = [
   { label: 'Testimonios', href: '/#testimonios' },
 ];
 
-const whatsappHref = buildWhatsAppUrl(contact.whatsapp, 'Hola, quiero más información.');
-
 /** Formatea 50685097011 como +506 8509 7011. */
 function formatPhone(raw: string) {
   const country = raw.slice(0, 3);
@@ -22,15 +20,17 @@ function formatPhone(raw: string) {
   return `+${country} ${rest.slice(0, 4)} ${rest.slice(4)}`;
 }
 
-export function SiteFooter() {
+export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
+  const whatsappHref = buildWhatsAppUrl(contact.whatsapp, 'Hola, quiero más información.');
+
   return (
     <footer className="border-border border-t">
       <Container className="grid gap-10 py-14 lg:grid-cols-[1.4fr_1fr_1.2fr] lg:gap-16 lg:py-20">
         <div className="space-y-3">
           <Logo height={26} />
           <p className="text-muted-foreground max-w-[34ch] text-sm">
-            Personalización por sublimación en {contact.location}. Regalos, detalles y pedidos
-            corporativos.
+            Personalización por sublimación{contact.location ? ` en ${contact.location}` : ''}.
+            Regalos, detalles y pedidos corporativos.
           </p>
         </div>
 
@@ -53,8 +53,8 @@ export function SiteFooter() {
         <div className="space-y-3">
           <h2 className="text-muted-foreground text-sm font-medium">Contacto</h2>
           <ul className="text-muted-foreground space-y-2 text-sm">
-            <li>{contact.location}</li>
-            <li>{contact.schedule}</li>
+            {contact.location ? <li>{contact.location}</li> : null}
+            {contact.schedule ? <li>{contact.schedule}</li> : null}
             <li>
               <a
                 href={`mailto:${contact.email}`}

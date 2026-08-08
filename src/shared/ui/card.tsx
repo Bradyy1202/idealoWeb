@@ -1,4 +1,4 @@
-import { contact, type Product } from '@/shared/data/mock/site';
+import type { Product } from '@/shared/data/mock/site';
 import { formatPrice } from '@/shared/lib/format-price';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Badge } from './badge';
@@ -8,9 +8,9 @@ import { Badge } from './badge';
  * WhatsApp con el producto pre-armado en el mensaje, que es la única
  * conversión real disponible hoy.
  */
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, whatsapp }: { product: Product; whatsapp: string }) {
   const whatsappHref = buildWhatsAppUrl(
-    contact.whatsapp,
+    whatsapp,
     `Hola, quiero cotizar: ${product.name} (${product.sku}).`,
   );
 

@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, Menu, X } from 'lucide-react';
-import { contact } from '@/shared/data/mock/site';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Container } from '@/shared/ui/container';
 import { Button } from '@/shared/ui/button';
 import { Logo } from '@/shared/ui/logo';
 import { QuoteListBadge } from '@/modules/quote-list/components/quote-list-badge';
+import type { ContactSettingsInput } from '@/modules/content/schema';
 
 const navigation = [
   { label: 'Catálogo', href: '/catalogo' },
@@ -18,11 +18,6 @@ const navigation = [
   { label: 'Testimonios', href: '/#testimonios' },
   { label: 'Contacto', href: '/#contacto' },
 ];
-
-const whatsappHref = buildWhatsAppUrl(
-  contact.whatsapp,
-  'Hola, quiero cotizar productos personalizados.',
-);
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -34,9 +29,13 @@ const itemFadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-export function SiteHeader() {
+export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const whatsappHref = buildWhatsAppUrl(
+    contact.whatsapp,
+    'Hola, quiero cotizar productos personalizados.',
+  );
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);

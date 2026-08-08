@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { contact } from '@/shared/data/mock/site';
+import { getContactSettings } from '@/modules/content/service';
 import { formatPrice } from '@/shared/lib/format-price';
 import { buildProductInquiryMessage, buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { SITE_URL } from '@/shared/lib/site-url';
@@ -64,6 +64,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
   // ese problema, porque el contenido principal ya se decidió por completo.
   if (!product) notFound();
 
+  const contact = await getContactSettings();
   const whatsappHref = buildWhatsAppUrl(
     contact.whatsapp,
     buildProductInquiryMessage({

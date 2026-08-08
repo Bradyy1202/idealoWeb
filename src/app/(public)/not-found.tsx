@@ -1,13 +1,8 @@
 import Link from 'next/link';
-import { contact } from '@/shared/data/mock/site';
+import { getContactSettings } from '@/modules/content/service';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { buttonVariants } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
-
-const whatsappHref = buildWhatsAppUrl(
-  contact.whatsapp,
-  'Hola, buscaba algo en el sitio y no lo encontré.',
-);
 
 /**
  * Se activa cuando `notFound()` se llama desde una ruta DENTRO de (public)/
@@ -16,7 +11,13 @@ const whatsappHref = buildWhatsAppUrl(
  * src/app/not-found.tsx (ese es para URLs sin ninguna ruta coincidente,
  * donde ningún layout de (public)/ llega a montarse).
  */
-export default function PublicNotFound() {
+export default async function PublicNotFound() {
+  const contact = await getContactSettings();
+  const whatsappHref = buildWhatsAppUrl(
+    contact.whatsapp,
+    'Hola, buscaba algo en el sitio y no lo encontré.',
+  );
+
   return (
     <Container className="flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
       <p data-numeral className="text-muted-foreground/40 font-display text-6xl sm:text-7xl">

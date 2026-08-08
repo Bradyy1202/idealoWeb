@@ -15,7 +15,7 @@ const itemFadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export function FeaturedProductsSection() {
+export function FeaturedProductsSection({ whatsapp }: { whatsapp: string }) {
   return (
     <Section>
       <SectionHeading
@@ -33,7 +33,7 @@ export function FeaturedProductsSection() {
       >
         {featuredProducts.map((product) => (
           <motion.div key={product.slug} variants={itemFadeIn}>
-            <ProductCard product={product} />
+            <ProductCard product={product} whatsapp={whatsapp} />
           </motion.div>
         ))}
       </motion.div>

@@ -1,14 +1,9 @@
 import Link from 'next/link';
-import { contact } from '@/shared/data/mock/site';
+import { getContactSettings } from '@/modules/content/service';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { buttonVariants } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
 import { Logo } from '@/shared/ui/logo';
-
-const whatsappHref = buildWhatsAppUrl(
-  contact.whatsapp,
-  'Hola, buscaba algo en el sitio y no lo encontré.',
-);
 
 /**
  * Página raíz de Next.js: captura cualquier URL sin ruta coincidente. Vive
@@ -16,7 +11,13 @@ const whatsappHref = buildWhatsAppUrl(
  * árbol de un route group cuando no hay ruta que resolver) — se arma
  * standalone con el mismo sistema de diseño.
  */
-export default function NotFound() {
+export default async function NotFound() {
+  const contact = await getContactSettings();
+  const whatsappHref = buildWhatsAppUrl(
+    contact.whatsapp,
+    'Hola, buscaba algo en el sitio y no lo encontré.',
+  );
+
   return (
     <Container className="relative flex min-h-[100dvh] flex-col justify-center py-20">
       <Link href="/" className="absolute top-6 left-5 md:top-8">

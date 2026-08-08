@@ -1,8 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { about } from '@/shared/data/mock/site';
 import { Section } from '@/shared/ui/section';
+import type { AboutSettingsInput } from '@/modules/content/schema';
 
 /**
  * Sin foto real del taller todavía: la ranura reservada sigue el patrón del
@@ -10,7 +10,7 @@ import { Section } from '@/shared/ui/section';
  * equipo de varias personas que mostrar — no fabricamos nombres ni roles
  * que no existen.
  */
-export function AboutSection() {
+export function AboutSection({ about }: { about: AboutSettingsInput }) {
   return (
     <Section id="quienes-somos" className="overflow-hidden">
       <div className="grid gap-8 py-4 lg:grid-cols-2 lg:items-center">
