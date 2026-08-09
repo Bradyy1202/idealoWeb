@@ -201,7 +201,9 @@
 }
 
 @utility animate-marquee {
-  animation: marquee 22s linear infinite;
+  /* 14s, no 22s: a 22s la cinta avanzaba ~90px/s, lo bastante lento como
+     para parecer quieta si no te quedás mirándola. */
+  animation: marquee 14s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -209,7 +211,19 @@
     scroll-behavior: auto;
   }
 
+  /* Sin movimiento: la cinta se convierte en una fila estática y centrada,
+     no en un loop congelado a media pasada (que mostraba las frases de los
+     extremos cortadas, como si estuviera roto). Se oculta la copia
+     duplicada —que solo existe para que el loop no deje hueco— y el riel
+     deja de ser más ancho que su contenedor. */
   .animate-marquee {
     animation: none;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .animate-marquee [data-marquee-clone] {
+    display: none;
   }
 }

@@ -36,7 +36,7 @@ export default async function Home() {
 
   return (
     <>
-      <Hero hero={hero} whatsapp={contact.whatsapp} />
+      <Hero hero={hero} />
       <TrustStrip />
       <CategoriesSection />
       <HowItWorksSection />

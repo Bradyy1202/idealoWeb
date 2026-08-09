@@ -3,103 +3,76 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { ArrowRight } from 'lucide-react';
-import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
-import { Button } from '@/shared/ui/button';
 import { Logo } from '@/shared/ui/logo';
-import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import type { HeroSettingsInput } from '@/modules/content/schema';
 
 /**
- * Estructura calcada de releaf.bio: foto de borde a borde con esquinas muy
- * redondeadas y margen respecto a la ventana (no un hero pegado a los
- * bordes), texto gigante centrado directamente sobre la foto (sombra de
- * texto en vez de un velo pesado) y una tarjeta de CTA que se superpone al
- * borde inferior. Ya no hay header propio: el logo de la marca vive
- * únicamente acá, en una cápsula sobre la esquina superior izquierda de la
- * foto, y la navegación es la cápsula flotante de `SiteNav`.
+ * Foto de borde a borde con esquinas muy redondeadas y margen respecto a la
+ * ventana, con el texto directamente encima (sombra de texto en vez de un
+ * velo pesado). El logo de la marca vive únicamente acá, en la cápsula de la
+ * esquina superior izquierda; la navegación es la cápsula flotante de
+ * `SiteNav`.
+ *
+ * Sin botones propios: la conversión vive en la barra (Catálogo y Cotizar,
+ * siempre visibles al hacer scroll) y en el resto de las secciones, así que
+ * la tarjeta que se superponía al borde inferior era una tercera copia de
+ * los mismos dos destinos.
+ *
+ * OJO: `hero.primaryCta` y `hero.secondaryCta` se siguen editando desde el
+ * panel pero ya no se muestran en ningún lado. Si no van a volver, conviene
+ * sacarlos también del formulario de ajustes para no ofrecer un campo que
+ * no cambia nada.
  *
  * La foto (public/hero.png) es una imagen de referencia/ambiente, no una
  * foto real del taller o los productos de Idealo: reemplazar por
  * fotografía real en cuanto exista.
  */
-export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: string }) {
-  const whatsappHref = buildWhatsAppUrl(whatsapp, 'Hola, quiero cotizar productos personalizados.');
-
+export function Hero({ hero }: { hero: HeroSettingsInput }) {
   return (
     <section className="px-3 pt-3 md:px-5 md:pt-5">
-      <div className="relative">
-        <div className="relative min-h-[600px] overflow-hidden rounded-[2rem] md:min-h-[720px] md:rounded-[2.5rem]">
-          <Image
-            src="/hero.png"
-            alt="Diseño personalizado aplicado a botellas, tazas, textiles y accesorios por sublimación"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-          {/* Sombra suave de arriba a abajo, no un velo que tape la foto: el
-              texto se apoya en text-shadow para leerse encima. */}
-          <div className="from-ink/65 via-ink/10 absolute inset-0 bg-gradient-to-t to-transparent" />
+      <div className="relative min-h-[560px] overflow-hidden rounded-[2rem] md:min-h-[720px] md:rounded-[2.5rem]">
+        <Image
+          src="/hero.png"
+          alt="Diseño personalizado aplicado a botellas, tazas, textiles y accesorios por sublimación"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        {/* Sombra suave de arriba a abajo, no un velo que tape la foto: el
+            texto se apoya en text-shadow para leerse encima. */}
+        <div className="from-ink/65 via-ink/10 absolute inset-0 bg-gradient-to-t to-transparent" />
 
-          {/* Sin clase de alto responsiva: `Logo` fija `style={{ height }}`
-              en línea, que gana sobre cualquier `md:h-*`. El tamaño se
-              controla solo con la prop. */}
-          <Link
-            href="/"
-            aria-label="Idealo, inicio"
-            className="bg-card absolute top-5 left-5 z-10 rounded-full px-4 py-3 shadow-md md:top-7 md:left-7"
-          >
-            <Logo height={30} />
-          </Link>
-
-          <div className="relative flex h-full min-h-[600px] flex-col items-center justify-center px-6 pb-16 text-center md:min-h-[720px] md:pb-20">
-            <motion.h1
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="max-w-[18ch] text-5xl font-extrabold tracking-tight text-white [text-shadow:0_4px_28px_rgba(0,0,0,0.35)] sm:text-6xl xl:text-[5.25rem] xl:leading-[0.98]"
-            >
-              {hero.title}
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-5 max-w-[52ch] text-lg text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.3)] md:text-xl"
-            >
-              {hero.subtitle}
-            </motion.p>
-          </div>
-        </div>
-
-        {/* Tarjeta de CTA superpuesta al borde inferior de la foto: fuera del
-            contenedor con overflow-hidden para que no se recorte. */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="bg-card relative z-10 mx-auto -mt-12 flex w-fit max-w-[calc(100%-2rem)] flex-col items-center gap-3 rounded-[1.75rem] p-4 shadow-lg sm:-mt-8 sm:flex-row"
+        {/* Sin clase de alto responsiva: `Logo` fija `style={{ height }}` en
+            línea, que gana sobre cualquier `md:h-*`. El tamaño se controla
+            solo con la prop. */}
+        <Link
+          href="/"
+          aria-label="Idealo, inicio"
+          className="bg-card absolute top-5 left-5 z-10 rounded-full px-4 py-3 shadow-md md:top-7 md:left-7"
         >
-          <Link href="/catalogo" className="w-full sm:w-auto">
-            <Button size="lg" className="group w-full rounded-full sm:w-auto">
-              {hero.primaryCta}
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto"
+          <Logo height={30} />
+        </Link>
+
+        <div className="relative flex min-h-[560px] flex-col items-center justify-center px-6 text-center md:min-h-[720px]">
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="max-w-[18ch] text-4xl font-extrabold tracking-tight text-white [text-shadow:0_4px_28px_rgba(0,0,0,0.35)] sm:text-6xl xl:text-[5.25rem] xl:leading-[0.98]"
           >
-            <Button variant="whatsapp" size="lg" className="w-full gap-2 rounded-full sm:w-auto">
-              <WhatsAppIcon className="h-4 w-4" />
-              {hero.secondaryCta}
-            </Button>
-          </a>
-        </motion.div>
+            {hero.title}
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-5 max-w-[52ch] text-base text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.3)] sm:text-lg md:text-xl"
+          >
+            {hero.subtitle}
+          </motion.p>
+        </div>
       </div>
     </section>
   );
