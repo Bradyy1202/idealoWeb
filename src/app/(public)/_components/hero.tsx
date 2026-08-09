@@ -42,12 +42,15 @@ export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: st
               texto se apoya en text-shadow para leerse encima. */}
           <div className="from-ink/65 via-ink/10 absolute inset-0 bg-gradient-to-t to-transparent" />
 
+          {/* Sin clase de alto responsiva: `Logo` fija `style={{ height }}`
+              en línea, que gana sobre cualquier `md:h-*`. El tamaño se
+              controla solo con la prop. */}
           <Link
             href="/"
             aria-label="Idealo, inicio"
-            className="bg-card/95 absolute top-5 left-5 z-10 rounded-full p-2.5 shadow-md backdrop-blur-md md:top-7 md:left-7 md:p-3"
+            className="bg-card absolute top-5 left-5 z-10 rounded-full px-4 py-3 shadow-md md:top-7 md:left-7"
           >
-            <Logo height={22} className="md:h-7" />
+            <Logo height={30} />
           </Link>
 
           <div className="relative flex h-full min-h-[600px] flex-col items-center justify-center px-6 pb-16 text-center md:min-h-[720px] md:pb-20">
