@@ -201,9 +201,12 @@
 }
 
 @utility animate-marquee {
-  /* 14s, no 22s: a 22s la cinta avanzaba ~90px/s, lo bastante lento como
-     para parecer quieta si no te quedás mirándola. */
-  animation: marquee 14s linear infinite;
+  /* La duración es por vuelta completa, así que la velocidad real depende
+     de cuántas frases tenga la cinta: al pasar de 4 a 9 el riel creció a
+     ~2716px y con 14s iba a ~194px/s, demasiado apurado para leerlas. Con
+     19s queda en ~145px/s. Si agregás o quitás frases, la velocidad cambia
+     sola — reajustá acá si hace falta. */
+  animation: marquee 19s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
