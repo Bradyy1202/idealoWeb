@@ -99,13 +99,16 @@
   --popover: #fff6ea;
   --popover-foreground: #23301b;
 
-  /* Caléndula: el mismo amarillo-ámbar del botón "Discover Sustainability"
-     real del sitio. Texto oscuro encima (no blanco): sobre un amarillo
-     cálido el blanco no llega al contraste mínimo de 4.5:1. */
-  --primary: #e8a33d;
-  --primary-foreground: #17220f;
-  /* Misma familia, más oscura: texto/íconos legibles sobre el fondo claro. */
-  --primary-text: #96591a;
+  /* Azul profundo. Reemplaza la caléndula naranja que venía de la
+     referencia: la paleta ya tenía coral como acento cálido y el naranja se
+     le pegaba demasiado. El azul se separa de los dos verdes y del coral, y
+     conversa con el gris azulado de --mist.
+     Da 6.3:1 con crema encima (botones) y 6.1:1 como texto sobre crema, así
+     que a diferencia del naranja sirve para las dos cosas y no necesita una
+     variante oscura aparte. --primary-text queda por compatibilidad. */
+  --primary: #1d5fa4;
+  --primary-foreground: #fdfbf6;
+  --primary-text: #1d5fa4;
 
   --secondary: #eee6d5;
   --secondary-foreground: #23301b;
@@ -121,7 +124,7 @@
 
   --border: #e6dcc3;
   --input: #e6dcc3;
-  --ring: #e8a33d;
+  --ring: #1d5fa4;
 
   /* WhatsApp: única acción que usa este verde en todo el sitio. */
   --whatsapp: oklch(0.72 0.19 149);
@@ -188,6 +191,59 @@
 
 @utility text-whatsapp-foreground {
   color: var(--whatsapp-foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Baraja en abanico (src/shared/ui/card-fan-carousel.tsx). El componente
+   original posiciona las tarjetas con GSAP pero da por hecho estas dos
+   clases, que no venían con él: sin ellas las tarjetas se apilan en flujo
+   normal y el abanico no existe.
+
+   Los altos coinciden con los que `getHeightMultiplier` considera ideales
+   en cada breakpoint; si cambiás uno, cambiá el otro.
+--------------------------------------------------------------------------- */
+.fan-layout {
+  height: 22rem;
+}
+
+.fan-card {
+  position: absolute;
+  height: 85%;
+  aspect-ratio: 4 / 7;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background-color: var(--muted);
+  box-shadow: 0 18px 40px -20px rgb(23 34 15 / 0.45);
+  will-change: transform;
+  transform-origin: center bottom;
+}
+
+@media (min-width: 480px) {
+  .fan-layout {
+    height: 26rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .fan-layout {
+    height: 28rem;
+  }
+
+  .fan-card {
+    border-radius: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .fan-layout {
+    height: 34rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fan-layout {
+    height: 38rem;
+  }
 }
 
 @keyframes marquee {

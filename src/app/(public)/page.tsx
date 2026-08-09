@@ -44,7 +44,7 @@ export default async function Home() {
       <GallerySection items={galleryItems} />
       <AboutSection about={about} />
       <TestimonialsSection testimonials={testimonials} />
-      <FaqSection faqs={faqs} />
+      <FaqSection faqs={faqs} whatsapp={contact.whatsapp} />
       <ContactSection contact={contact} />
     </>
   );

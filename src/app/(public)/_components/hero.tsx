@@ -29,7 +29,7 @@ import type { HeroSettingsInput } from '@/modules/content/schema';
  */
 export function Hero({ hero }: { hero: HeroSettingsInput }) {
   return (
-    <section className="px-3 pt-3 md:px-5 md:pt-5">
+    <section className="px-2 pt-3 md:px-5 md:pt-5">
       <div className="relative min-h-[560px] overflow-hidden rounded-[2rem] md:min-h-[720px] md:rounded-[2.5rem]">
         <Image
           src="/hero.png"

@@ -23,7 +23,9 @@ export function Marquee({ items, className }: { items: string[]; className?: str
               className="flex items-center gap-8 whitespace-nowrap md:gap-10"
             >
               <span className="text-sm font-semibold md:text-base">{item}</span>
-              <span className="text-primary text-sm md:text-base" aria-hidden>
+              {/* Separador en el mismo crema del texto, atenuado: el azul de
+                  marca sobre el verde de la cinta da 1.3:1 y desaparecería. */}
+              <span className="text-sm opacity-50 md:text-base" aria-hidden>
                 ✻
               </span>
             </span>

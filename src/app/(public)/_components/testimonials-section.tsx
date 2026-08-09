@@ -17,11 +17,14 @@ function RatingStars({ rating, tone }: { rating: number; tone: 'light' | 'dark' 
             key={index}
             size={15}
             strokeWidth={0}
+            // Sobre el bloque oscuro las estrellas van en gris azulado
+            // claro, no en el azul de marca: ese azul contra `--ink` da
+            // 2.5:1 y las estrellas quedarían casi invisibles.
             className={cn(
               index < rating
                 ? tone === 'light'
-                  ? 'fill-primary'
-                  : 'fill-primary-text'
+                  ? 'fill-mist'
+                  : 'fill-primary'
                 : tone === 'light'
                   ? 'fill-white/25'
                   : 'fill-muted',
@@ -66,8 +69,8 @@ export function TestimonialsSection({ testimonials }: { testimonials: Testimonia
           </span>
 
           <div className="relative">
-            <span className="text-primary flex items-center gap-3 text-xs font-semibold tracking-[0.18em] uppercase">
-              <span className="bg-primary h-px w-8" aria-hidden />
+            <span className="text-mist flex items-center gap-3 text-xs font-semibold tracking-[0.18em] uppercase">
+              <span className="bg-mist h-px w-8" aria-hidden />
               Testimonios
             </span>
             <blockquote className="mt-6 text-xl leading-snug font-semibold sm:text-3xl sm:leading-[1.2]">
