@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Check, Gift, GlassWater, Shirt, UtensilsCrossed } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ArrowUpRight, Gift, GlassWater, Shirt, UtensilsCrossed } from 'lucide-react';
 import { categories } from '@/shared/data/mock/site';
 import { Section, SectionHeading } from '@/shared/ui/section';
-import { Button } from '@/shared/ui/button';
+import { cn } from '@/shared/lib/cn';
+import { staggerContainer, fadeInUp, revealOnce } from '@/shared/lib/motion-presets';
 
 const icons = {
   botellas: GlassWater,
@@ -15,81 +16,110 @@ const icons = {
 } as const;
 
 /**
- * Un color de etiqueta distinto por categoría, como las tarjetas de marcas
- * asociadas de releaf.bio (Carlsberg en azul, PANGAIA en verde, LVMH en
- * rosa...): la variedad de color es la señal, no un acento único repetido
- * cuatro veces.
+ * Un campo de color entero por categoría, no un ícono de color sobre tarjeta
+ * crema: cuatro tarjetas iguales con el mismo fondo y distinto ícono era
+ * exactamente lo que hacía que la sección se sintiera de plantilla. Ahora
+ * cada categoría es un bloque con su propio color de marca, y la primera
+ * ocupa el doble de ancho para que la grilla tenga jerarquía en vez de
+ * cuatro celdas intercambiables.
  */
-const tagStyles = {
-  botellas: 'bg-primary text-primary-foreground',
+const fields = {
+  botellas: 'bg-ink text-ink-foreground',
   tazas: 'bg-coral text-coral-foreground',
-  textiles: 'bg-success-foreground text-card',
-  accesorios: 'bg-ink text-ink-foreground',
+  textiles: 'bg-primary text-primary-foreground',
+  accesorios: 'bg-mist text-mist-foreground',
 } as const;
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
-
-const itemFadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
 
 export function CategoriesSection() {
   return (
-    <Section
-      id="categorias"
-      className="bg-mist text-mist-foreground mx-3 rounded-[2rem] md:mx-5 md:rounded-[2.5rem]"
-    >
+    <Section id="categorias">
       <SectionHeading
         eyebrow="Categorías"
         title="Qué personalizamos"
-        description="Cuatro familias de productos, todas con sublimación de alta calidad."
+        description="Cuatro familias de productos, todas con sublimación de alta calidad y pedido por unidad."
       />
 
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4"
+        viewport={revealOnce}
+        className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3"
       >
-        {categories.map((category) => {
+        {categories.map((category, index) => {
           const Icon = icons[category.slug as keyof typeof icons];
-          const tag = tagStyles[category.slug as keyof typeof tagStyles];
+          const field = fields[category.slug as keyof typeof fields];
+          // Con 4 tarjetas en 3 columnas, la primera y la última se llevan
+          // ancho doble: 2+1 arriba, 1+2 abajo. Así la grilla tiene jerarquía
+          // (deja de ser cuatro celdas intercambiables) y encima cierra sin
+          // dejar una celda vacía al final de la segunda fila.
+          const isFeature = index === 0;
+          const isWide = isFeature || index === categories.length - 1;
+
           return (
             <motion.div
               key={category.slug}
-              variants={itemFadeIn}
-              whileHover={{ y: -4 }}
-              className="bg-card flex h-full flex-col rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md sm:rounded-[1.75rem] sm:p-6"
+              variants={fadeInUp}
+              // El ancho doble solo desde lg: en móvil las cuatro van iguales
+              // en 2 columnas, que es lo compacto. Si acá se expandieran,
+              // dos de las cuatro ocuparían el ancho entero y la sección
+              // crecería justo donde hay menos pantalla.
+              className={cn(isWide && 'lg:col-span-2')}
             >
-              <div
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full sm:h-11 sm:w-11 ${tag}`}
+              <Link
+                href={`/catalogo/${category.slug}`}
+                className={cn(
+                  'group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl p-5 transition-transform duration-300 hover:-translate-y-1 sm:rounded-[1.75rem] sm:p-7',
+                  'min-h-[180px] sm:min-h-[240px]',
+                  isFeature && 'lg:min-h-[320px]',
+                  field,
+                )}
               >
-                <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
+                {/* La silueta enorme, recortada por el borde, es el motivo de
+                    la tarjeta: da escala y peso sin depender de una foto. */}
+                <Icon
+                  className={cn(
+                    'pointer-events-none absolute -right-6 -bottom-8 opacity-20 transition-transform duration-500 group-hover:scale-110',
+                    isFeature ? 'h-56 w-56 sm:h-72 sm:w-72' : 'h-40 w-40 sm:h-52 sm:w-52',
+                  )}
+                  strokeWidth={0.75}
+                  aria-hidden
+                />
 
-              <h3 className="mt-3 text-base font-bold sm:mt-4 sm:text-xl">{category.name}</h3>
-              <p className="text-muted-foreground mt-1 line-clamp-2 text-xs sm:text-sm">
-                {category.description}
-              </p>
+                <div className="relative">
+                  <h3
+                    className={cn(
+                      'font-bold tracking-tight',
+                      isFeature ? 'text-2xl sm:text-4xl' : 'text-lg sm:text-2xl',
+                    )}
+                  >
+                    {category.name}
+                  </h3>
+                  <p
+                    className={cn(
+                      'mt-2 max-w-[30ch] text-xs opacity-80 sm:text-sm',
+                      !isFeature && 'line-clamp-2',
+                    )}
+                  >
+                    {category.description}
+                  </p>
+                </div>
 
-              <ul className="mt-3 space-y-1 sm:mt-4 sm:space-y-1.5">
-                {category.facts.map((fact) => (
-                  <li key={fact} className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm">
-                    <Check className="text-primary-text h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
-                    <span className="line-clamp-1">{fact}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link href={`/catalogo/${category.slug}`} className="mt-auto block pt-3 sm:pt-5">
-                <Button variant="outline" size="sm" className="w-full rounded-full sm:w-auto">
-                  Ver catálogo
-                </Button>
+                <div className="relative mt-6 flex items-end justify-between gap-3">
+                  <ul className="flex flex-wrap gap-1.5">
+                    {category.facts.map((fact) => (
+                      <li
+                        key={fact}
+                        className="rounded-full border border-current/25 px-2.5 py-1 text-[0.65rem] font-medium opacity-80 sm:text-xs"
+                      >
+                        {fact}
+                      </li>
+                    ))}
+                  </ul>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-current/30 transition-transform duration-300 group-hover:rotate-45">
+                    <ArrowUpRight className="h-4 w-4" aria-hidden />
+                  </span>
+                </div>
               </Link>
             </motion.div>
           );

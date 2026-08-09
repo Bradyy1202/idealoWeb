@@ -1,20 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Section, SectionHeading } from '@/shared/ui/section';
 import { Badge } from '@/shared/ui/badge';
 import type { GalleryPublicItem } from '@/modules/content/service';
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-};
-
-const itemFadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
+import { staggerContainer, fadeInUp, revealOnce } from '@/shared/lib/motion-presets';
 
 /** Sin fotos todavía (`GalleryItem` se administra desde el panel): no hay nada real que mostrar, así que la sección no se renderiza. */
 export function GallerySection({ items }: { items: GalleryPublicItem[] }) {
@@ -32,13 +23,13 @@ export function GallerySection({ items }: { items: GalleryPublicItem[] }) {
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
+        viewport={revealOnce}
         className="grid gap-4 pb-12 sm:grid-cols-2 lg:grid-cols-3"
       >
         {items.map((item, index) => (
           <motion.figure
             key={item.id}
-            variants={itemFadeIn}
+            variants={fadeInUp}
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.3 }}
             className={

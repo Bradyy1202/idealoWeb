@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Mail, MapPin } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';

@@ -1,21 +1,12 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Factory, ShoppingBag, Truck, UploadCloud } from 'lucide-react';
 import { howItWorks } from '@/shared/data/mock/site';
 import { Section, SectionHeading } from '@/shared/ui/section';
+import { staggerContainer, fadeInUp, revealOnce } from '@/shared/lib/motion-presets';
 
 const stepIcons = [ShoppingBag, UploadCloud, Factory, Truck] as const;
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
-};
-
-const itemFadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
 
 /**
  * Producto → Diseño → Producción → Entrega, con una línea de progreso real
@@ -33,16 +24,16 @@ export function HowItWorksSection() {
         description="De la idea al pedido en tu puerta, en cuatro pasos."
       />
 
-      <div className="relative mx-auto max-w-5xl">
-        {/* Línea vertical (móvil): detrás de los badges, a la altura de su centro. */}
+      {/* Sin `max-w-5xl` centrado: los cuatro pasos usan todo el ancho del
+          contenedor, como el resto de las secciones. Encerrados en una caja
+          angosta al centro quedaban apretados con aire muerto a los lados. */}
+      <div className="relative">
+        {/* Línea vertical (móvil): detrás de los números, a la altura de su centro. */}
+        <div className="bg-border absolute top-8 bottom-8 left-6 w-px md:hidden" aria-hidden />
+        {/* Línea horizontal (desktop): un octavo de espacio a cada lado, para
+            que arranque y termine bajo el primer y último número. */}
         <div
-          className="bg-border absolute top-8 bottom-8 left-7 w-px sm:left-8 md:hidden"
-          aria-hidden
-        />
-        {/* Línea horizontal (desktop): un cuarto de espacio a cada lado, para
-            que quede centrada bajo la fila de badges en vez de tocar los bordes. */}
-        <div
-          className="bg-border absolute top-9 right-[12.5%] left-[12.5%] hidden h-px md:block"
+          className="bg-border absolute top-8 right-[12.5%] left-[12.5%] hidden h-px md:block"
           aria-hidden
         />
 
@@ -50,30 +41,32 @@ export function HowItWorksSection() {
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
-          className="relative grid gap-6 md:grid-cols-4"
+          viewport={revealOnce}
+          className="relative grid gap-5 md:grid-cols-4 md:gap-8"
         >
           {howItWorks.map((step, index) => {
             const Icon = stepIcons[index] ?? ShoppingBag;
             return (
               <motion.li
                 key={step.number}
-                variants={itemFadeIn}
-                whileHover={{ y: -4 }}
-                className="bg-card relative flex items-start gap-4 rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:flex-col md:items-center md:gap-0 md:p-6 md:text-center"
+                variants={fadeInUp}
+                className="group relative flex items-start gap-4 md:flex-col md:items-start md:gap-0"
               >
-                <div className="relative h-14 w-14 shrink-0 sm:h-16 sm:w-16">
-                  <div className="bg-primary text-primary-foreground relative z-10 flex h-full w-full items-center justify-center rounded-full text-lg font-bold sm:text-xl">
+                {/* Sin tarjeta: los pasos van directo sobre el fondo de la
+                    sección. Cuatro tarjetas más, después de categorías y
+                    destacados, era la tercera grilla de tarjetas seguida. */}
+                <div className="relative h-12 w-12 shrink-0 md:h-16 md:w-16">
+                  <div className="bg-primary text-primary-foreground ring-secondary/60 relative z-10 flex h-full w-full items-center justify-center rounded-full text-base font-bold ring-8 transition-transform duration-300 group-hover:scale-105 md:text-xl">
                     {step.number}
                   </div>
-                  <div className="bg-ink text-ink-foreground absolute -right-1 -bottom-1 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-sm sm:h-7 sm:w-7">
-                    <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <div className="bg-ink text-ink-foreground absolute -right-1 -bottom-1 z-10 flex h-6 w-6 items-center justify-center rounded-full md:h-7 md:w-7">
+                    <Icon className="h-3 w-3 md:h-3.5 md:w-3.5" aria-hidden />
                   </div>
                 </div>
 
-                <div className="md:mt-4">
-                  <h3 className="text-base font-semibold sm:text-lg">{step.title}</h3>
-                  <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+                <div className="md:mt-6">
+                  <h3 className="text-base font-bold sm:text-lg md:text-xl">{step.title}</h3>
+                  <p className="text-muted-foreground mt-1.5 max-w-[34ch] text-sm">
                     {step.description}
                   </p>
                 </div>

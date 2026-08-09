@@ -3,12 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { ChevronRight, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { cn } from '@/shared/lib/cn';
 import { Container } from '@/shared/ui/container';
-import { Button } from '@/shared/ui/button';
 import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import { QuoteListBadge } from '@/modules/quote-list/components/quote-list-badge';
 import type { ContactSettingsInput } from '@/modules/content/schema';
@@ -22,56 +20,44 @@ const navigation = [
   { label: 'Contacto', href: '/#contacto', sectionId: 'contacto' },
 ];
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-};
-
-const itemFadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
-
 /**
- * Cápsula flotante centrada arriba de la ventana, calcada de la referencia:
- * una carcasa crema que arranca con el botón "Menú" y, pegado a la derecha,
- * un bloque oscuro con los enlaces, donde la sección actual va en blanco y
- * el resto en blanco atenuado (verificado a 5.8:1 sobre `--ink`, por encima
- * del mínimo AA de 4.5:1).
+ * Cápsula compacta: en reposo solo muestra el rótulo "Menú" y la sección
+ * donde está parada la persona. Se despliega al pasar el mouse (escritorio)
+ * o al tocarla (móvil y cualquier pantalla táctil), y se cierra sola al
+ * salir, al elegir un enlace, con Escape o al tocar fuera.
  *
- * "Menú" es un botón real en todos los tamaños, no un rótulo decorativo:
- * abre el panel completo. En móvil ese panel es la única navegación y el
- * bloque oscuro se reduce a mostrar dónde está parada la persona.
+ * El despliegue anima el ancho del bloque oscuro, no su visibilidad: así los
+ * enlaces salen "de adentro" de la píldora en vez de aparecer de golpe.
  */
 export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Guarda junto con la ruta donde se observó: al navegar a una página sin
+  const [isOpen, setIsOpen] = useState(false);
+  // Se guarda junto con la ruta donde se observó: al navegar a una página sin
   // esas secciones (una ficha de producto, por ejemplo) el valor se descarta
   // al derivarlo, en vez de limpiarlo con otro setState dentro del efecto.
   const [observed, setObserved] = useState<{ path: string; id: string } | null>(null);
   const activeSection = observed?.path === pathname ? observed.id : null;
-  const menuTriggerRef = useRef<HTMLButtonElement>(null);
-  const menuCloseRef = useRef<HTMLButtonElement>(null);
-  const menuPanelRef = useRef<HTMLDivElement>(null);
-  const wasMenuOpenRef = useRef(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const whatsappHref = buildWhatsAppUrl(
     contact.whatsapp,
     'Hola, quiero cotizar productos personalizados.',
   );
 
   // Resalta la sección visible mientras se hace scroll en la portada. En
-  // /catalogo y otras rutas simplemente no hay secciones con esos ids, así
-  // que activeSection se queda en null y solo "Catálogo" se marca por ruta.
+  // /catalogo y otras rutas no hay secciones con esos ids, así que
+  // activeSection queda en null y solo "Catálogo" se marca por ruta.
   useEffect(() => {
-    const sectionIds = navigation
+    const elements = navigation
       .map((item) => item.sectionId)
-      .filter((id): id is string => id !== null);
-    const elements = sectionIds
+      .filter((id): id is string => id !== null)
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
     if (elements.length === 0) return;
 
+    // Mientras ninguna sección esté en la banda central se conserva la
+    // última: al final de la página la banda cae sobre el pie, y limpiarla
+    // ahí devolvía el rótulo a "Inicio" estando abajo del todo.
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter((entry) => entry.isIntersecting);
@@ -82,53 +68,56 @@ export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
       { rootMargin: '-45% 0px -45% 0px' },
     );
     elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+
+    // Arriba del todo sí se limpia: ahí la sección correcta es "Inicio", y
+    // el observador solo no alcanza porque al volver al tope no entra
+    // ninguna sección nueva que dispare el callback.
+    const onScroll = () => {
+      if (window.scrollY < 80) setObserved(null);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', onScroll);
+    };
   }, [pathname]);
 
+  // Escape y clic fuera cierran. Sin esto, en táctil la píldora se quedaba
+  // abierta para siempre: no hay evento de "salió el mouse" que la cierre.
   useEffect(() => {
-    if (isMenuOpen) {
-      wasMenuOpenRef.current = true;
-      document.body.style.overflow = 'hidden';
-      menuCloseRef.current?.focus();
-    } else if (wasMenuOpenRef.current) {
-      wasMenuOpenRef.current = false;
-      document.body.style.overflow = '';
-      menuTriggerRef.current?.focus();
+    if (!isOpen) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsOpen(false);
     }
+    function onPointerDown(event: PointerEvent) {
+      if (!shellRef.current?.contains(event.target as Node)) setIsOpen(false);
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
     return () => {
-      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
     };
-  }, [isMenuOpen]);
+  }, [isOpen]);
 
   useEffect(() => {
-    if (!isMenuOpen) return;
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setIsMenuOpen(false);
-        return;
-      }
-      if (event.key !== 'Tab' || !menuPanelRef.current) return;
+  /** Margen de gracia al salir: evita que se cierre al cruzar de un enlace a otro. */
+  function scheduleClose() {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => setIsOpen(false), 220);
+  }
 
-      const focusable = menuPanelRef.current.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled])',
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isMenuOpen]);
+  function cancelClose() {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+  }
 
   function isActive(item: (typeof navigation)[number]) {
     if (item.sectionId) return activeSection === item.sectionId;
@@ -139,9 +128,8 @@ export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
     return pathname.startsWith(item.href);
   }
 
-  // Rótulo del bloque oscuro en móvil, donde no caben los seis enlaces: dice
-  // dónde está parada la persona. Las fichas de producto se cuentan como
-  // catálogo (es de donde se llega y a donde se vuelve).
+  // Las fichas de producto se cuentan como catálogo: es de donde se llega y
+  // a donde se vuelve.
   const activeItem = navigation.find(isActive);
   const currentLabel =
     activeItem?.label ??
@@ -152,137 +140,97 @@ export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
         : 'Inicio');
 
   return (
-    <>
-      <motion.div
-        initial={{ y: -40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="sticky top-3 z-50 px-3 md:top-5 md:px-5"
-      >
-        <Container className="flex justify-center">
-          <div className="bg-card border-border/60 flex items-center gap-1 rounded-full border p-1.5 shadow-md">
-            <button
-              ref={menuTriggerRef}
-              type="button"
-              onClick={() => setIsMenuOpen(true)}
-              aria-expanded={isMenuOpen}
-              aria-controls="menu-principal"
-              className="hover:bg-accent rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors sm:px-4"
-            >
-              Menú
-            </button>
-
-            <div className="bg-ink flex items-center rounded-full p-1">
-              <nav aria-label="Principal" className="hidden items-center lg:flex">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={isActive(item) ? 'page' : undefined}
-                    className={cn(
-                      'rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
-                      isActive(item) ? 'text-white' : 'text-white/60 hover:text-white',
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-
-              <span className="px-3 py-1.5 text-sm font-medium whitespace-nowrap text-white sm:px-4 lg:hidden">
-                {currentLabel}
-              </span>
-            </div>
-
-            <QuoteListBadge />
-
-            <div className="hidden items-center gap-1.5 lg:flex">
-              <Link href="/catalogo">
-                <Button variant="outline" size="sm" className="rounded-full">
-                  Ver catálogo
-                </Button>
-              </Link>
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                <Button variant="whatsapp" size="sm" className="gap-1.5 rounded-full">
-                  <WhatsAppIcon className="h-4 w-4" />
-                  Cotizar
-                </Button>
-              </a>
-            </div>
-          </div>
-        </Container>
-      </motion.div>
-
-      {isMenuOpen ? (
-        <motion.div
-          ref={menuPanelRef}
-          id="menu-principal"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menú principal"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="bg-background fixed inset-0 z-50 overflow-y-auto"
+    <motion.div
+      initial={{ y: -40, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="sticky top-3 z-50 px-3 md:top-5 md:px-5"
+    >
+      <Container className="flex justify-center">
+        <div
+          ref={shellRef}
+          onMouseEnter={() => {
+            cancelClose();
+            setIsOpen(true);
+          }}
+          onMouseLeave={scheduleClose}
+          className="bg-card border-border/60 flex items-center gap-1 rounded-full border p-1.5 shadow-md"
         >
-          <Container className="flex h-16 items-center justify-between md:h-20">
-            <span className="text-sm font-semibold tracking-wide uppercase">Menú</span>
-            <button
-              ref={menuCloseRef}
-              type="button"
-              onClick={() => setIsMenuOpen(false)}
-              className="hover:bg-accent rounded-full p-2 transition-colors"
-            >
-              <X className="h-6 w-6" />
-              <span className="sr-only">Cerrar menú</span>
-            </button>
-          </Container>
-
-          <motion.nav
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            aria-label="Menú completo"
-            className="mx-auto grid max-w-2xl gap-2 px-5 pt-6 pb-10 md:gap-3 md:px-8 md:pt-12"
+          <button
+            type="button"
+            onClick={() => setIsOpen((open) => !open)}
+            aria-expanded={isOpen}
+            aria-controls="nav-principal"
+            className="hover:bg-accent rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors sm:px-4"
           >
-            {navigation.map((item) => (
-              <motion.div key={item.href} variants={itemFadeIn}>
+            Menú
+            <span className="sr-only"> de navegación</span>
+          </button>
+
+          <div className="bg-ink flex items-center rounded-full p-1">
+            {/* Rótulo en reposo. Sale de la maqueta al abrir (position:
+                absolute) para que el ancho lo definan los enlaces. */}
+            <AnimatePresence initial={false}>
+              {!isOpen ? (
+                <motion.span
+                  key="current"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, position: 'absolute' }}
+                  transition={{ duration: 0.15 }}
+                  className="px-3 py-1.5 text-sm font-medium whitespace-nowrap text-white sm:px-4"
+                >
+                  {currentLabel}
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+
+            <motion.nav
+              id="nav-principal"
+              aria-label="Principal"
+              initial={false}
+              animate={{ width: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="flex items-center overflow-hidden"
+              // inert mientras está cerrada: sin esto los enlaces invisibles
+              // siguen siendo tabulables y el foco desaparece de la pantalla.
+              inert={!isOpen}
+            >
+              {navigation.map((item) => (
                 <Link
+                  key={item.href}
                   href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => setIsOpen(false)}
+                  aria-current={isActive(item) ? 'page' : undefined}
+                  // El activo lleva fondo propio, no solo texto blanco: el
+                  // hover también pone el texto en blanco, y al expandirse la
+                  // píldora queda un enlace cualquiera bajo el cursor, que se
+                  // leía como "estás acá" sin estarlo.
                   className={cn(
-                    'flex items-center justify-between rounded-2xl px-4 py-3 text-xl font-semibold transition-colors md:text-3xl',
-                    isActive(item) ? 'bg-ink text-ink-foreground' : 'hover:bg-accent',
+                    'rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                    isActive(item) ? 'bg-white/15 text-white' : 'text-white/60 hover:text-white/90',
                   )}
                 >
                   {item.label}
-                  <ChevronRight className="h-5 w-5 shrink-0" />
                 </Link>
-              </motion.div>
-            ))}
-            <motion.div
-              variants={itemFadeIn}
-              className="flex flex-col gap-3 pt-6 sm:flex-row sm:justify-center"
-            >
-              <Link href="/catalogo" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="outline" size="lg" className="w-full rounded-full sm:w-auto">
-                  Ver catálogo
-                </Button>
-              </Link>
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                <Button
-                  variant="whatsapp"
-                  size="lg"
-                  className="w-full gap-2 rounded-full sm:w-auto"
-                >
-                  <WhatsAppIcon className="h-4 w-4" />
-                  Cotizar por WhatsApp
-                </Button>
-              </a>
-            </motion.div>
-          </motion.nav>
-        </motion.div>
-      ) : null}
-    </>
+              ))}
+            </motion.nav>
+          </div>
+
+          <QuoteListBadge />
+
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Cotizar por WhatsApp"
+            className="bg-whatsapp text-whatsapp-foreground flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-transform hover:scale-105"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Cotizar</span>
+          </a>
+        </div>
+      </Container>
+    </motion.div>
   );
 }

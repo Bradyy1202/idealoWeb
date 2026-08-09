@@ -17,7 +17,11 @@ test('recorrido público: inicio → catálogo → filtrar → producto → What
   await page.goto('/');
   await expect(page).toHaveTitle(/Idealo/i);
 
-  await page.getByRole('link', { name: 'Ver catálogo' }).first().click();
+  // Por href y no por texto: el rótulo del CTA principal sale de la base
+  // (`SiteSetting.hero.primaryCta`, hoy "Explorar catálogo") y la barra ya no
+  // tiene un botón fijo "Ver catálogo". Lo que este paso verifica es el
+  // recorrido —desde la portada se llega al catálogo—, no una etiqueta.
+  await page.locator('main a[href="/catalogo"]').first().click();
   await expect(page).toHaveURL(/\/catalogo$/);
 
   const firstProductLink = page.locator('a[href^="/producto/"]').first();

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Button } from '@/shared/ui/button';
