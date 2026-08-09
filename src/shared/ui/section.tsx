@@ -22,10 +22,20 @@ export function Section({ children, id, className, containerClassName }: Section
     <section
       id={id}
       className={cn(
-        'w-full py-16 md:py-24 lg:py-28',
-        // El header es sticky (64px / 72px desde md): sin este margen, un
-        // salto por ancla deja la sección tapada detrás de la barra.
-        id && 'scroll-mt-20 md:scroll-mt-24',
+        // Sin `w-full`: un <section> es block por defecto y ya ocupa el
+        // ancho disponible con `width: auto`, que sí resta los márgenes
+        // horizontales del cálculo. `width: 100%` (w-full) no los resta, así
+        // que sumado a `mx-3 md:mx-5` (categorías, testimonios) desbordaba
+        // el ancho de la ventana en vez de quedar centrado con margen real.
+        //
+        // Menos padding vertical en móvil: con ~9 secciones apiladas, el
+        // py-16 fijo original sumaba más de 1000px de aire puro antes de
+        // llegar a cualquier contenido — "más información visible por
+        // pantalla, no menos".
+        'py-10 sm:py-16 md:py-24 lg:py-28',
+        // La nav es sticky (top-3/top-5 + su propia altura): sin este
+        // margen, un salto por ancla deja la sección tapada detrás de ella.
+        id && 'scroll-mt-24 md:scroll-mt-28',
         className,
       )}
     >
@@ -46,15 +56,22 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-col items-center space-y-3 pb-12 text-center', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center space-y-2 pb-8 text-center sm:space-y-3 sm:pb-12',
+        className,
+      )}
+    >
       {eyebrow ? (
-        <span className="text-primary-text text-sm font-semibold tracking-wide uppercase">
+        <span className="text-primary-text text-xs font-semibold tracking-wide uppercase sm:text-sm">
           {eyebrow}
         </span>
       ) : null}
-      <h2 className="text-3xl tracking-tight sm:text-4xl md:text-5xl">{title}</h2>
+      <h2 className="text-2xl tracking-tight sm:text-4xl md:text-5xl">{title}</h2>
       {description ? (
-        <p className="text-muted-foreground mx-auto max-w-[640px] text-lg">{description}</p>
+        <p className="text-muted-foreground mx-auto max-w-[640px] text-base sm:text-lg">
+          {description}
+        </p>
       ) : null}
     </div>
   );

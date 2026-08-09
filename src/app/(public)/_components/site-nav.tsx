@@ -2,21 +2,23 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronRight, Menu, X } from 'lucide-react';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
+import { cn } from '@/shared/lib/cn';
 import { Container } from '@/shared/ui/container';
 import { Button } from '@/shared/ui/button';
-import { Logo } from '@/shared/ui/logo';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import { QuoteListBadge } from '@/modules/quote-list/components/quote-list-badge';
 import type { ContactSettingsInput } from '@/modules/content/schema';
 
 const navigation = [
-  { label: 'Catálogo', href: '/catalogo' },
-  { label: 'Cómo funciona', href: '/#como-funciona' },
-  { label: 'Categorías', href: '/#categorias' },
-  { label: 'Testimonios', href: '/#testimonios' },
-  { label: 'Contacto', href: '/#contacto' },
+  { label: 'Catálogo', href: '/catalogo', sectionId: null },
+  { label: 'Cómo funciona', href: '/#como-funciona', sectionId: 'como-funciona' },
+  { label: 'Categorías', href: '/#categorias', sectionId: 'categorias' },
+  { label: 'Testimonios', href: '/#testimonios', sectionId: 'testimonios' },
+  { label: 'Contacto', href: '/#contacto', sectionId: 'contacto' },
 ];
 
 const staggerContainer = {
@@ -29,9 +31,17 @@ const itemFadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
+/**
+ * Reemplaza el header blanco a todo el ancho por una sola cápsula flotante
+ * (idea visual de releaf.bio, secciones propias de Idealo) que queda pegada
+ * arriba de la ventana al hacer scroll: el sitio necesita navegación
+ * persistente para moverse entre catálogo y secciones, así que "flotante" es
+ * también "sticky", no solo un adorno que aparece una vez arriba del Hero.
+ */
+export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const menuCloseRef = useRef<HTMLButtonElement>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
@@ -41,16 +51,31 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
     'Hola, quiero cotizar productos personalizados.',
   );
 
+  // Resalta la sección visible mientras se hace scroll en la portada. En
+  // /catalogo y otras rutas simplemente no hay secciones con esos ids, así
+  // que activeSection se queda en null y solo "Catálogo" se marca por ruta.
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 20);
-    onScroll();
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    const sectionIds = navigation
+      .map((item) => item.sectionId)
+      .filter((id): id is string => id !== null);
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (elements.length === 0) return;
 
-  // Bloquea el scroll de fondo mientras el menú de pantalla completa está
-  // abierto, y devuelve el foco al botón que lo abrió al cerrarlo (sin esto
-  // el foco se pierde en el <body>).
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+        if (visible.length > 0) {
+          setActiveSection(visible[0]!.target.id);
+        }
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [pathname]);
+
   useEffect(() => {
     if (isMenuOpen) {
       wasMenuOpenRef.current = true;
@@ -66,9 +91,6 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
     };
   }, [isMenuOpen]);
 
-  // Escape cierra el menú; Tab queda atrapado dentro del panel (foco
-  // circular) para que no se pueda tabular al header que sigue detrás,
-  // visualmente tapado pero técnicamente en el DOM.
   useEffect(() => {
     if (!isMenuOpen) return;
 
@@ -99,32 +121,43 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMenuOpen]);
 
+  function isActive(item: (typeof navigation)[number]) {
+    if (item.sectionId) return activeSection === item.sectionId;
+    return pathname.startsWith(item.href);
+  }
+
   return (
     <>
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
+      <motion.div
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`border-border bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur transition-shadow ${isScrolled ? 'shadow-md' : ''}`}
+        className="sticky top-3 z-50 px-3 md:top-5 md:px-5"
       >
-        <Container className="flex h-16 items-center justify-between md:h-[72px]">
-          <Link href="/" aria-label="Idealo, inicio">
-            <Logo height={28} />
-          </Link>
+        <Container className="flex items-center">
+          {/* Una sola cápsula (no dos separadas a los extremos): centrada,
+              con los enlaces y las acciones dentro del mismo bloque, como en
+              la referencia visual. */}
+          <div className="bg-card/95 border-border/60 mx-auto hidden items-center gap-1 rounded-full border p-1.5 shadow-sm backdrop-blur-md lg:flex">
+            <nav aria-label="Principal" className="flex items-center gap-1">
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors',
+                    isActive(item)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
-          <nav aria-label="Principal" className="hidden items-center gap-6 lg:flex">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+            <div className="bg-border mx-1 h-6 w-px" aria-hidden />
 
-          <div className="hidden items-center gap-3 lg:flex">
             <QuoteListBadge />
             <Link href="/catalogo">
               <Button variant="outline" size="sm" className="rounded-full">
@@ -132,28 +165,29 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
               </Button>
             </Link>
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-              <Button variant="whatsapp" size="sm" className="rounded-full">
-                Cotizar por WhatsApp
+              <Button variant="whatsapp" size="sm" className="gap-1.5 rounded-full">
+                <WhatsAppIcon className="h-4 w-4" />
+                Cotizar
               </Button>
             </a>
           </div>
 
-          <div className="flex items-center gap-1 lg:hidden">
+          <div className="bg-card/95 border-border/60 ml-auto flex items-center gap-1 rounded-full border p-1.5 shadow-sm backdrop-blur-md lg:hidden">
             <QuoteListBadge />
             <button
               ref={menuTriggerRef}
               type="button"
-              className="flex"
+              className="flex h-9 w-9 items-center justify-center"
               onClick={() => setIsMenuOpen(true)}
               aria-expanded={isMenuOpen}
               aria-controls="menu-movil"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
               <span className="sr-only">Abrir menú</span>
             </button>
           </div>
         </Container>
-      </motion.header>
+      </motion.div>
 
       {isMenuOpen ? (
         <motion.div
@@ -168,7 +202,7 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
           className="bg-background fixed inset-0 z-50 lg:hidden"
         >
           <Container className="flex h-16 items-center justify-between">
-            <Logo height={26} />
+            <span className="text-sm font-semibold tracking-wide uppercase">Menú</span>
             <button ref={menuCloseRef} type="button" onClick={() => setIsMenuOpen(false)}>
               <X className="h-6 w-6" />
               <span className="sr-only">Cerrar menú</span>
@@ -187,7 +221,10 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
                 <Link
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="hover:bg-accent flex items-center justify-between rounded-2xl px-3 py-2 text-lg font-medium"
+                  className={cn(
+                    'flex items-center justify-between rounded-2xl px-3 py-2 text-lg font-medium',
+                    isActive(item) ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
+                  )}
                 >
                   {item.label}
                   <ChevronRight className="h-4 w-4" />
@@ -201,7 +238,8 @@ export function SiteHeader({ contact }: { contact: ContactSettingsInput }) {
                 </Button>
               </Link>
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                <Button variant="whatsapp" className="w-full rounded-full">
+                <Button variant="whatsapp" className="w-full gap-2 rounded-full">
+                  <WhatsAppIcon className="h-4 w-4" />
                   Cotizar por WhatsApp
                 </Button>
               </a>

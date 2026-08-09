@@ -1,16 +1,18 @@
 import Link from 'next/link';
+import { Coffee, CupSoda, GlassWater, Shirt } from 'lucide-react';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Container } from '@/shared/ui/container';
 import { Button } from '@/shared/ui/button';
 import { Logo } from '@/shared/ui/logo';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import type { ContactSettingsInput } from '@/modules/content/schema';
 
 const navigation = [
   { label: 'Catálogo', href: '/catalogo' },
   { label: 'Cómo funciona', href: '/#como-funciona' },
   { label: 'Categorías', href: '/#categorias' },
-  { label: 'Galería', href: '/#galeria' },
   { label: 'Testimonios', href: '/#testimonios' },
+  { label: 'Contacto', href: '/#contacto' },
 ];
 
 /** Formatea 50685097011 como +506 8509 7011. */
@@ -21,18 +23,20 @@ function formatPhone(raw: string) {
 }
 
 /**
- * Bloque de cierre en coral quemado a página completa, como el footer real
- * de releaf.bio — no una franja gris con borde superior. Líneas finas
- * radiales de fondo como decoración, igual que las de la referencia.
+ * Bloque de cierre oscuro a página completa: líneas finas radiales de fondo
+ * (ya existían) más cuatro íconos de producto muy tenues (taza, botella,
+ * camiseta, vaso) como motivo decorativo de sublimación — no fotos reales
+ * (no existen todavía), un motivo gráfico, igual de honesto que los
+ * íconos que ya usa `CategoriesSection`.
  */
 export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
   const whatsappHref = buildWhatsAppUrl(contact.whatsapp, 'Hola, quiero más información.');
 
   return (
     <footer className="px-3 pb-3 md:px-5 md:pb-5">
-      <div className="bg-coral text-coral-foreground relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem]">
+      <div className="bg-ink text-ink-foreground relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem]">
         <svg
-          className="pointer-events-none absolute inset-0 h-full w-full opacity-25"
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-15"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden
@@ -44,6 +48,27 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
             <path d="M45 100 Q 60 50 85 0" />
           </g>
         </svg>
+
+        <GlassWater
+          className="pointer-events-none absolute top-10 -left-6 h-32 w-32 -rotate-12 opacity-[0.07] md:h-44 md:w-44"
+          strokeWidth={1}
+          aria-hidden
+        />
+        <Coffee
+          className="pointer-events-none absolute top-4 right-[18%] h-20 w-20 rotate-6 opacity-[0.07] md:h-28 md:w-28"
+          strokeWidth={1}
+          aria-hidden
+        />
+        <Shirt
+          className="pointer-events-none absolute bottom-10 left-[38%] h-24 w-24 -rotate-6 opacity-[0.07] md:h-32 md:w-32"
+          strokeWidth={1}
+          aria-hidden
+        />
+        <CupSoda
+          className="pointer-events-none absolute right-4 bottom-2 h-28 w-28 rotate-12 opacity-[0.07] md:h-36 md:w-36"
+          strokeWidth={1}
+          aria-hidden
+        />
 
         <Container className="relative grid gap-10 py-14 lg:grid-cols-[1.3fr_1fr_1.2fr] lg:gap-16 lg:py-20">
           <div className="space-y-4">
@@ -82,18 +107,18 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
               </li>
             </ul>
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-              <Button variant="whatsapp" size="sm" className="rounded-full">
-                WhatsApp {formatPhone(contact.whatsapp)}
+              <Button variant="whatsapp" size="sm" className="gap-1.5 rounded-full">
+                <WhatsAppIcon className="h-4 w-4" />
+                {formatPhone(contact.whatsapp)}
               </Button>
             </a>
           </div>
         </Container>
 
         <div className="relative border-t border-white/15">
-          {/* md:pr-52: el botón flotante de WhatsApp es `fixed` sobre esta
-              esquina; sin este margen tapa "La cotización final...". */}
-          <Container className="flex flex-col items-center justify-between gap-1 py-6 text-xs text-white/70 md:h-16 md:flex-row md:py-0 md:pr-52">
+          <Container className="flex flex-col items-center gap-1.5 py-6 text-center text-xs text-white/70 md:flex-row md:justify-between md:py-7 md:text-left">
             <p data-numeral>© {new Date().getFullYear()} Idealo. Todos los derechos reservados.</p>
+            <p>Envíos a todo Costa Rica.</p>
             <p>Los precios son referenciales. La cotización final se confirma por WhatsApp.</p>
           </Container>
         </div>

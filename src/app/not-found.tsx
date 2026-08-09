@@ -4,6 +4,7 @@ import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { buttonVariants } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
 import { Logo } from '@/shared/ui/logo';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 
 /**
  * Página raíz de Next.js: captura cualquier URL sin ruta coincidente. Vive
@@ -43,8 +44,9 @@ export default async function NotFound() {
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className={buttonVariants({ variant: 'whatsapp', className: 'rounded-full' })}
+          className={buttonVariants({ variant: 'whatsapp', className: 'gap-2 rounded-full' })}
         >
+          <WhatsAppIcon className="h-4 w-4" />
           Escribir por WhatsApp
         </a>
       </div>

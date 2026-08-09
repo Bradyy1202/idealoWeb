@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { Button } from '@/shared/ui/button';
+import { Logo } from '@/shared/ui/logo';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import type { HeroSettingsInput } from '@/modules/content/schema';
 
 /**
@@ -13,8 +15,9 @@ import type { HeroSettingsInput } from '@/modules/content/schema';
  * redondeadas y margen respecto a la ventana (no un hero pegado a los
  * bordes), texto gigante centrado directamente sobre la foto (sombra de
  * texto en vez de un velo pesado) y una tarjeta de CTA que se superpone al
- * borde inferior. Sin logo flotante propio: el header ya lo muestra justo
- * encima, y repetirlo acá era ruido, no una segunda marca de agua.
+ * borde inferior. Ya no hay header propio: el logo de la marca vive
+ * únicamente acá, en una cápsula sobre la esquina superior izquierda de la
+ * foto, y la navegación es la cápsula flotante de `SiteNav`.
  *
  * La foto (public/hero.png) es una imagen de referencia/ambiente, no una
  * foto real del taller o los productos de Idealo: reemplazar por
@@ -38,6 +41,14 @@ export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: st
           {/* Sombra suave de arriba a abajo, no un velo que tape la foto: el
               texto se apoya en text-shadow para leerse encima. */}
           <div className="from-ink/65 via-ink/10 absolute inset-0 bg-gradient-to-t to-transparent" />
+
+          <Link
+            href="/"
+            aria-label="Idealo, inicio"
+            className="bg-card/95 absolute top-5 left-5 z-10 rounded-full p-2.5 shadow-md backdrop-blur-md md:top-7 md:left-7 md:p-3"
+          >
+            <Logo height={22} className="md:h-7" />
+          </Link>
 
           <div className="relative flex h-full min-h-[600px] flex-col items-center justify-center px-6 pb-16 text-center md:min-h-[720px] md:pb-20">
             <motion.h1
@@ -80,7 +91,8 @@ export function Hero({ hero, whatsapp }: { hero: HeroSettingsInput; whatsapp: st
             rel="noopener noreferrer"
             className="w-full sm:w-auto"
           >
-            <Button variant="whatsapp" size="lg" className="w-full rounded-full sm:w-auto">
+            <Button variant="whatsapp" size="lg" className="w-full gap-2 rounded-full sm:w-auto">
+              <WhatsAppIcon className="h-4 w-4" />
               {hero.secondaryCta}
             </Button>
           </a>

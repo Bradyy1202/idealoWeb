@@ -3,6 +3,7 @@ import { getContactSettings } from '@/modules/content/service';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { buttonVariants } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 
 /**
  * Se activa cuando `notFound()` se llama desde una ruta DENTRO de (public)/
@@ -39,8 +40,9 @@ export default async function PublicNotFound() {
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className={buttonVariants({ variant: 'whatsapp', className: 'rounded-full' })}
+          className={buttonVariants({ variant: 'whatsapp', className: 'gap-2 rounded-full' })}
         >
+          <WhatsAppIcon className="h-4 w-4" />
           Escribir por WhatsApp
         </a>
       </div>

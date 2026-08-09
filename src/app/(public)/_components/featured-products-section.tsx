@@ -29,7 +29,7 @@ export function FeaturedProductsSection({ whatsapp }: { whatsapp: string }) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="grid gap-6 pb-12 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid grid-cols-2 gap-3 pb-12 sm:gap-6 lg:grid-cols-4"
       >
         {featuredProducts.map((product) => (
           <motion.div key={product.slug} variants={itemFadeIn}>

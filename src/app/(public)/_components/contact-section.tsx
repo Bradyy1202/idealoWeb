@@ -2,12 +2,13 @@
 
 import { useActionState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 import { Section } from '@/shared/ui/section';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import { submitContactFormAction, type ContactFormState } from '@/modules/inquiries/actions';
 import type { ContactSettingsInput } from '@/modules/content/schema';
 
@@ -28,7 +29,7 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
       ? [{ icon: MapPin, label: 'Ubicación', value: contact.location, numeral: false }]
       : []),
     { icon: Mail, label: 'Correo', value: contact.email, numeral: false },
-    { icon: Phone, label: 'WhatsApp', value: formatPhone(contact.whatsapp), numeral: true },
+    { icon: WhatsAppIcon, label: 'WhatsApp', value: formatPhone(contact.whatsapp), numeral: true },
   ];
 
   return (

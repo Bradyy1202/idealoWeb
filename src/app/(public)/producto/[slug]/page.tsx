@@ -24,6 +24,7 @@ import { ProductGrid } from '@/modules/products/components/product-grid';
 import { ProductGridSkeleton } from '@/modules/products/components/product-grid-skeleton';
 import { WhatsappInquiryLink } from '@/modules/inquiries/components/whatsapp-inquiry-link';
 import { AddToQuoteListButton } from '@/modules/quote-list/components/add-to-quote-list-button';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 
 type ProductoPageProps = {
   params: Promise<{ slug: string }>;
@@ -138,7 +139,8 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
               productId={product.id}
               productSnapshot={product.name}
             >
-              <Button variant="whatsapp" size="lg" className="w-full rounded-full sm:w-auto">
+              <Button variant="whatsapp" size="lg" className="w-full gap-2 rounded-full sm:w-auto">
+                <WhatsAppIcon className="h-4 w-4" />
                 Cotizar por WhatsApp
               </Button>
             </WhatsappInquiryLink>

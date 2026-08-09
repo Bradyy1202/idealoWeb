@@ -10,6 +10,7 @@ import { Button } from '@/shared/ui/button';
 import { Container } from '@/shared/ui/container';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Textarea } from '@/shared/ui/textarea';
+import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import { useQuoteList } from '@/modules/quote-list/hooks';
 import { registerQuoteListInquiryAction } from '@/modules/inquiries/actions';
 
@@ -166,7 +167,13 @@ export function QuoteListView({ whatsapp }: { whatsapp: string }) {
           <Button type="button" variant="outline" className="rounded-full" onClick={clear}>
             Vaciar lista
           </Button>
-          <Button type="button" variant="whatsapp" className="rounded-full" onClick={handleSend}>
+          <Button
+            type="button"
+            variant="whatsapp"
+            className="gap-2 rounded-full"
+            onClick={handleSend}
+          >
+            <WhatsAppIcon className="h-4 w-4" />
             Enviar por WhatsApp
           </Button>
         </div>

@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
   return (
     <Link
       href={`/producto/${product.slug}`}
-      className="group bg-card flex h-full flex-col overflow-hidden rounded-[1.75rem] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group bg-card flex h-full flex-col overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:rounded-[1.75rem]"
     >
       <div className="bg-muted relative aspect-square overflow-hidden">
         {product.primaryImage ? (
@@ -24,24 +24,28 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           />
         ) : (
           <div className="border-border text-muted-foreground flex h-full items-center justify-center border border-dashed text-center">
-            <span className="text-[0.625rem] tracking-[0.16em] uppercase">Foto próximamente</span>
+            <span className="text-[0.55rem] tracking-[0.16em] uppercase sm:text-[0.625rem]">
+              Foto próximamente
+            </span>
           </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        <h3 className="text-lg font-bold">{product.name}</h3>
+      <div className="flex flex-1 flex-col gap-1.5 p-3 sm:gap-2 sm:p-5">
+        <h3 className="text-sm font-bold sm:text-lg">{product.name}</h3>
         {product.shortDescription ? (
-          <p className="text-muted-foreground line-clamp-2 text-sm">{product.shortDescription}</p>
+          <p className="text-muted-foreground line-clamp-2 hidden text-sm sm:block">
+            {product.shortDescription}
+          </p>
         ) : null}
 
-        <div className="mt-auto flex items-baseline justify-between gap-3 pt-2">
-          <p className="text-sm font-semibold">
+        <div className="mt-auto flex items-baseline justify-between gap-3 pt-1 sm:pt-2">
+          <p className="text-xs font-semibold sm:text-sm">
             {product.basePrice === null
               ? 'Precio a cotizar'
               : `${product.priceIsFrom ? 'Desde ' : ''}${formatPrice(product.basePrice)}`}
           </p>
-          <span className="text-primary-text text-sm font-medium underline-offset-4 group-hover:underline">
+          <span className="text-primary-text hidden text-sm font-medium underline-offset-4 group-hover:underline sm:inline">
             Ver más →
           </span>
         </div>
