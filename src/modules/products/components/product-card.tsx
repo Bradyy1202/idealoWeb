@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
   return (
     <Link
       href={`/producto/${product.slug}`}
-      className="group border-border bg-card flex h-full flex-col overflow-hidden rounded-3xl border transition-shadow hover:shadow-md"
+      className="group bg-card flex h-full flex-col overflow-hidden rounded-[1.75rem] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="bg-muted relative aspect-square overflow-hidden">
         {product.primaryImage ? (

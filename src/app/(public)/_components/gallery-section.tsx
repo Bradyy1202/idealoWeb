@@ -43,8 +43,8 @@ export function GallerySection({ items }: { items: GalleryPublicItem[] }) {
             transition={{ duration: 0.3 }}
             className={
               index === 0
-                ? 'group border-border bg-muted relative aspect-[16/9] overflow-hidden rounded-2xl border sm:col-span-2'
-                : 'group border-border bg-muted relative aspect-square overflow-hidden rounded-2xl border'
+                ? 'group bg-muted relative aspect-[16/9] overflow-hidden rounded-[1.75rem] shadow-sm sm:col-span-2'
+                : 'group bg-muted relative aspect-square overflow-hidden rounded-[1.75rem] shadow-sm'
             }
           >
             <Image

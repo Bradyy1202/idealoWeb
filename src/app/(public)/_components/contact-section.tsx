@@ -79,7 +79,7 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="border-border bg-card rounded-2xl border p-6"
+          className="bg-card rounded-[1.75rem] p-6 shadow-sm"
         >
           <h3 className="text-xl font-semibold">Envianos un mensaje</h3>
 

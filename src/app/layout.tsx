@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Bricolage_Grotesque, IBM_Plex_Mono, Karla } from 'next/font/google';
+import { IBM_Plex_Mono, Manrope } from 'next/font/google';
 import { DEFAULT_OG_IMAGE } from '@/shared/lib/og-image';
 import { GoogleAnalytics } from '@/shared/ui/google-analytics';
 import './globals.css';
@@ -7,20 +7,13 @@ import './globals.css';
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Idealo';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
-// Títulos: grotesca con carácter, pensada para tamaños grandes sin perder
-// calidez — ver docs/adr para el porqué del rediseño.
-const bricolageGrotesque = Bricolage_Grotesque({
+// Una sola familia para títulos y cuerpo, en distintos pesos — como hace
+// releaf.bio con Aeonik (que es una fuente de pago; Manrope es la alternativa
+// geométrica más cercana disponible en Google Fonts). Ver docs/adr.
+const manrope = Manrope({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
-  variable: '--font-bricolage',
-  display: 'swap',
-});
-
-// Cuerpo e interfaz: humanista, cálida, distinta de la grotesca por defecto.
-const karla = Karla({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-karla',
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-manrope',
   display: 'swap',
 });
 
@@ -58,10 +51,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="es-CR"
-      className={`${bricolageGrotesque.variable} ${karla.variable} ${plexMono.variable}`}
-    >
+    <html lang="es-CR" className={`${manrope.variable} ${plexMono.variable}`}>
       <body>
         {children}
         <GoogleAnalytics />

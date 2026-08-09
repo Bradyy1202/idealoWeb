@@ -37,7 +37,10 @@ export function TestimonialsSection({ testimonials }: { testimonials: Testimonia
   if (testimonials.length === 0) return null;
 
   return (
-    <Section id="testimonios" className="bg-secondary/60">
+    <Section
+      id="testimonios"
+      className="bg-mist text-mist-foreground mx-3 rounded-[2rem] md:mx-5 md:rounded-[2.5rem]"
+    >
       <SectionHeading eyebrow="Testimonios" title="Lo que dicen quienes ya pidieron" />
 
       <motion.div
@@ -52,7 +55,7 @@ export function TestimonialsSection({ testimonials }: { testimonials: Testimonia
             key={item.id}
             variants={itemFadeIn}
             whileHover={{ y: -8 }}
-            className="border-border bg-background flex flex-col justify-between rounded-2xl border p-6"
+            className="bg-card flex flex-col justify-between rounded-[1.75rem] p-6 shadow-sm"
           >
             <div>
               {item.rating ? <RatingStars rating={item.rating} /> : null}

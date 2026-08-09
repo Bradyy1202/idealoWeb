@@ -35,7 +35,7 @@ export function AboutSection({ about }: { about: AboutSettingsInput }) {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="flex items-center justify-center"
         >
-          <div className="border-border bg-muted/40 flex h-[300px] w-full items-center justify-center rounded-2xl border border-dashed md:h-[380px]">
+          <div className="bg-mist flex h-[300px] w-full items-center justify-center rounded-[1.75rem] md:h-[380px]">
             <span className="text-muted-foreground text-xs tracking-[0.16em] uppercase">
               Foto del taller
             </span>

@@ -1,12 +1,25 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Sistema de diseño — tercera pasada, sobre dos referencias reales elegidas
-   por la dueña (riseatseven.com, releaf.bio): tipografía grande y segura,
-   bloques de sección que alternan tinta oscura y lienzo cálido, un solo
-   acento de color, tarjetas de esquina muy redondeada. La paleta sale del
-   propio oficio de la sublimación — tinta sobre una superficie en blanco —
-   no de una plantilla genérica. Ver docs/adr para el detalle completo.
+   Sistema de diseño — cuarta pasada: la dueña pidió acercarse mucho más a
+   releaf.bio específicamente (no una mezcla con riseatseven), y no solo en
+   tipografía/color sino en componentes, animación y estructura. Extraído de
+   un análisis real del sitio (CSS computado, capturas en cada scroll,
+   versión de escritorio y móvil), no de "inspiración" a ojo:
+
+   - Una sola familia tipográfica para todo (Aeonik en el original, de pago;
+     Manrope es la alternativa geométrica más cercana en Google Fonts),
+     igual que releaf usa Aeonik-Medium para títulos y Aeonik-Regular para
+     cuerpo en vez de una pareja de dos familias.
+   - Fondo casi blanco cálido, no un beige fuerte; texto en verde-tinta muy
+     oscuro, no negro puro.
+   - Caléndula como acento de marca: confirmado por el botón real
+     "Discover Sustainability" del sitio, no una invención.
+   - Coral quemado como color de cierre (footer, bloques de impacto) —
+     releaf lo usa así, distinto del verde de marca y de la caléndula.
+   - Bloques de sección que alternan fondo (blanco, crema, gris-azulado,
+     tinta oscura, coral) en vez de una sola superficie plana de principio
+     a fin — así se ve en cada scroll del sitio real.
 
    Sin dark mode todavía: la variante está declarada para cuando se agregue,
    pero hoy no hay ningún bloque `.dark` que la use.
@@ -15,8 +28,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-karla), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
   --color-background: var(--background);
@@ -50,15 +63,20 @@
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
 
-  /* Segundo acento de marca, aparte de primary: etiquetas y detalles
-     puntuales, nunca botones de acción (esos son primary o whatsapp). */
-  --color-berry: var(--berry);
-  --color-berry-foreground: var(--berry-foreground);
+  /* Coral quemado: bloques de cierre (footer, secciones de impacto), nunca
+     botones de acción — esos son primary o whatsapp. */
+  --color-coral: var(--coral);
+  --color-coral-foreground: var(--coral-foreground);
 
   /* Bloque de contraste oscuro para secciones tipo "hero" o cierre, el
      mismo tono que --foreground pero como fondo, no solo como texto. */
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
+
+  /* Gris azulado, para alternar con el lienzo/crema entre secciones (así lo
+     hace releaf con su franja de marcas asociadas). */
+  --color-mist: var(--mist);
+  --color-mist-foreground: var(--mist-foreground);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -67,51 +85,62 @@
 }
 
 :root {
-  --radius: 1.25rem;
+  --radius: 1.5rem;
 
-  /* Lienzo: el blanco de una superficie antes de sublimar, no un blanco frío. */
-  --background: #f1e9d8;
-  --foreground: #232821;
-  /* Papel: superficie de tarjeta, un tono más clara que el lienzo de fondo. */
-  --card: #fbf6ea;
-  --card-foreground: #232821;
-  --popover: #fbf6ea;
-  --popover-foreground: #232821;
+  /* Casi blanco cálido — el fondo real de releaf.bio es rgb(255,254,252),
+     no un beige marcado. */
+  --background: #fdfbf6;
+  /* Verde-tinta muy oscuro, el mismo color de texto que usa releaf.bio
+     (rgb(36,52,29) ≈ #24341d) en vez de un negro o azul genérico. */
+  --foreground: #23301b;
+  /* Crema: la superficie de tarjeta real de releaf.bio (rgb(255,247,238)). */
+  --card: #fff6ea;
+  --card-foreground: #23301b;
+  --popover: #fff6ea;
+  --popover-foreground: #23301b;
 
-  /* Caléndula: único acento de marca para CTA y estados activos. Texto
-     oscuro encima (no blanco): sobre un amarillo cálido el blanco no llega
-     al contraste mínimo de 4.5:1. */
+  /* Caléndula: el mismo amarillo-ámbar del botón "Discover Sustainability"
+     real del sitio. Texto oscuro encima (no blanco): sobre un amarillo
+     cálido el blanco no llega al contraste mínimo de 4.5:1. */
   --primary: #e8a33d;
-  --primary-foreground: #16333a;
-  /* Misma familia, más oscura: 4.6–5.2:1 sobre el lienzo y la tarjeta. */
+  --primary-foreground: #17220f;
+  /* Misma familia, más oscura: texto/íconos legibles sobre el fondo claro. */
   --primary-text: #96591a;
 
-  --secondary: #e7dcc5;
-  --secondary-foreground: #232821;
-  --muted: #e7dcc5;
-  --muted-foreground: #6d6656;
-  --accent: #ead9be;
-  --accent-foreground: #232821;
+  --secondary: #eee6d5;
+  --secondary-foreground: #23301b;
+  --muted: #eee6d5;
+  --muted-foreground: #6b6f5c;
+  --accent: #e9e1cd;
+  --accent-foreground: #23301b;
   --destructive: #c23b3b;
 
-  /* Musgo, no un verde genérico: se lleva bien con la caléndula y la tinta
-     sin competir con ellas por atención. */
+  /* Musgo: color semántico de "activo", separado del acento de marca. */
   --success: #dfe6cc;
   --success-foreground: #3f5133;
 
-  --border: #ddd0b4;
-  --input: #ddd0b4;
+  --border: #e6dcc3;
+  --input: #e6dcc3;
   --ring: #e8a33d;
 
   /* WhatsApp: única acción que usa este verde en todo el sitio. */
   --whatsapp: oklch(0.72 0.19 149);
   --whatsapp-foreground: oklch(0.145 0 0);
 
-  --berry: #b23a63;
-  --berry-foreground: #f1e9d8;
+  /* Coral quemado: el color de cierre real del footer de releaf.bio —
+     oscurecido un poco respecto al original para que el texto blanco
+     encima llegue a 4.5:1 (el tono de referencia daba 3.4:1). */
+  --coral: #c04521;
+  --coral-foreground: #fdfbf6;
 
-  --ink: #16333a;
-  --ink-foreground: #f1e9d8;
+  /* Tinta: el mismo verde-texto pero como fondo de bloque (nav, cierres). */
+  --ink: #17220f;
+  --ink-foreground: #fdfbf6;
+
+  /* Gris azulado — la franja de "marcas asociadas" de releaf.bio usa este
+     tono para separarse del blanco/crema del resto de la página. */
+  --mist: #dce4ea;
+  --mist-foreground: #23301b;
 }
 
 @layer base {
@@ -161,8 +190,26 @@
   color: var(--whatsapp-foreground);
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* -50%, no -100%: `track` duplica los items, así el loop no deja hueco. */
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee 22s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .animate-marquee {
+    animation: none;
   }
 }
