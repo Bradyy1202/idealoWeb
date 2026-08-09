@@ -146,7 +146,13 @@ export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
       transition={{ duration: 0.5 }}
       className="sticky top-3 z-50 px-3 md:top-5 md:px-5"
     >
-      <Container className="flex justify-center">
+      {/* En móvil flex con justify-between (centrar de verdad no cabe junto
+          a las acciones); desde md una grilla de tres columnas con los
+          laterales iguales, así la píldora queda centrada en la ventana sin
+          importar cuánto ocupe el grupo de la derecha. */}
+      <Container className="flex items-center justify-between gap-2 md:grid md:grid-cols-[1fr_auto_1fr]">
+        <div className="hidden md:block" aria-hidden />
+
         <div
           ref={shellRef}
           onMouseEnter={() => {
@@ -161,64 +167,68 @@ export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
             onClick={() => setIsOpen((open) => !open)}
             aria-expanded={isOpen}
             aria-controls="nav-principal"
-            className="hover:bg-accent rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors sm:px-4"
+            className="hover:bg-accent rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors sm:px-4"
           >
             Menú
             <span className="sr-only"> de navegación</span>
           </button>
 
-          <div className="bg-ink flex items-center rounded-full p-1">
-            {/* Rótulo en reposo. Sale de la maqueta al abrir (position:
-                absolute) para que el ancho lo definan los enlaces. */}
-            <AnimatePresence initial={false}>
-              {!isOpen ? (
-                <motion.span
-                  key="current"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, position: 'absolute' }}
-                  transition={{ duration: 0.15 }}
-                  className="px-3 py-1.5 text-sm font-medium whitespace-nowrap text-white sm:px-4"
-                >
-                  {currentLabel}
-                </motion.span>
-              ) : null}
-            </AnimatePresence>
+          {/* Rótulo en reposo, en caléndula de marca. Sale de la maqueta al
+              abrir (position: absolute) para que el ancho lo definan los
+              enlaces. */}
+          <AnimatePresence initial={false}>
+            {!isOpen ? (
+              <motion.span
+                key="current"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, position: 'absolute' }}
+                transition={{ duration: 0.15 }}
+                className="bg-primary text-primary-foreground rounded-full px-3 py-1.5 text-sm font-semibold whitespace-nowrap sm:px-4"
+              >
+                {currentLabel}
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
 
-            <motion.nav
-              id="nav-principal"
-              aria-label="Principal"
-              initial={false}
-              animate={{ width: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
-              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-              className="flex items-center overflow-hidden"
-              // inert mientras está cerrada: sin esto los enlaces invisibles
-              // siguen siendo tabulables y el foco desaparece de la pantalla.
-              inert={!isOpen}
-            >
-              {navigation.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  aria-current={isActive(item) ? 'page' : undefined}
-                  // El activo lleva fondo propio, no solo texto blanco: el
-                  // hover también pone el texto en blanco, y al expandirse la
-                  // píldora queda un enlace cualquiera bajo el cursor, que se
-                  // leía como "estás acá" sin estarlo.
-                  className={cn(
-                    'rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
-                    isActive(item) ? 'bg-white/15 text-white' : 'text-white/60 hover:text-white/90',
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </motion.nav>
-          </div>
+          <motion.nav
+            id="nav-principal"
+            aria-label="Principal"
+            initial={false}
+            animate={{ width: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+            transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+            className="flex items-center overflow-hidden"
+            // inert mientras está cerrada: sin esto los enlaces invisibles
+            // siguen siendo tabulables y el foco desaparece de la pantalla.
+            inert={!isOpen}
+          >
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                aria-current={isActive(item) ? 'page' : undefined}
+                // El activo lleva fondo propio, no solo un color de texto: el
+                // hover también oscurece el texto, y al expandirse la píldora
+                // queda un enlace cualquiera bajo el cursor, que se leía como
+                // "estás acá" sin estarlo.
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                  isActive(item)
+                    ? 'bg-primary text-primary-foreground font-semibold'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </motion.nav>
+        </div>
 
+        {/* Acciones fuera de la píldora de navegación: son conversión, no
+            navegación, y adentro competían con "dónde estoy". */}
+        <div className="bg-card border-border/60 flex items-center gap-1 rounded-full border p-1.5 shadow-md md:justify-self-end">
           <QuoteListBadge />
-
           <a
             href={whatsappHref}
             target="_blank"

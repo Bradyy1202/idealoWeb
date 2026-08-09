@@ -22,8 +22,8 @@ export function Marquee({ items, className }: { items: string[]; className?: str
               data-marquee-clone={copy === 1 ? '' : undefined}
               className="flex items-center gap-8 whitespace-nowrap md:gap-10"
             >
-              <span className="text-xl font-semibold md:text-3xl">{item}</span>
-              <span className="text-primary text-xl md:text-3xl" aria-hidden>
+              <span className="text-sm font-semibold md:text-base">{item}</span>
+              <span className="text-primary text-sm md:text-base" aria-hidden>
                 ✻
               </span>
             </span>
