@@ -144,7 +144,7 @@ export function SiteNav({ contact }: { contact: ContactSettingsInput }) {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="sticky top-3 z-50 px-3 md:top-5 md:px-5"
+      className="sticky top-3 z-50 px-3 md:top-5 md:translate-y-4 md:px-5"
     >
       {/* En móvil flex con justify-between (centrar de verdad no cabe junto
           a las acciones); desde md una grilla de tres columnas con los

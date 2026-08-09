@@ -1,20 +1,12 @@
 'use client';
 
-import { useActionState } from 'react';
 import { motion } from 'motion/react';
-import { Clock, Mail, MapPin } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Textarea } from '@/shared/ui/textarea';
+import { ArrowUpRight, Clock, Mail, MapPin } from 'lucide-react';
 import { Section } from '@/shared/ui/section';
 import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { easeOutExpo, revealOnce } from '@/shared/lib/motion-presets';
-import { submitContactFormAction, type ContactFormState } from '@/modules/inquiries/actions';
 import type { ContactSettingsInput } from '@/modules/content/schema';
-
-const initialState: ContactFormState = { status: 'idle' };
 
 /** Formatea 50685097011 como +506 8509 7011. */
 function formatPhone(raw: string) {
@@ -24,29 +16,29 @@ function formatPhone(raw: string) {
 }
 
 /**
- * Dos bloques que llenan la sección de borde a borde: los datos sobre
- * tinta oscura y el formulario sobre crema. Antes eran una columna de texto
- * suelto y una tarjeta chica flotando, y la mitad izquierda quedaba vacía.
+ * Dos bloques que llenan la sección de borde a borde: los datos sobre tinta
+ * oscura y, en lugar del formulario, WhatsApp como acción única y grande.
  *
- * WhatsApp va primero y como botón, no como un dato más de la lista: es el
- * único canal de conversión real del negocio, y el formulario es la
- * alternativa para quien prefiere no escribir por ahí.
+ * Sin formulario de contacto: WhatsApp es el único canal de conversión real
+ * del negocio, y tener las dos vías repartía la atención entre una que
+ * responde el mismo día y otra que llega a una bandeja.
+ *
+ * OJO: al sacarlo dejan de generarse consultas con origen `CONTACT_FORM`.
+ * `submitContactFormAction` y su esquema siguen en el módulo `inquiries`
+ * (no se borró nada), y la bandeja del panel mantiene ese filtro, que a
+ * partir de ahora solo mostrará las consultas ya recibidas. Si el
+ * formulario no va a volver, conviene quitar también el filtro.
  */
 export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
-  const [state, formAction, isPending] = useActionState(submitContactFormAction, initialState);
   const whatsappHref = buildWhatsAppUrl(
     contact.whatsapp,
     'Hola, quiero cotizar productos personalizados.',
   );
 
   const details = [
-    ...(contact.location
-      ? [{ icon: MapPin, label: 'Ubicación', value: contact.location, numeral: false }]
-      : []),
-    ...(contact.schedule
-      ? [{ icon: Clock, label: 'Horario', value: contact.schedule, numeral: false }]
-      : []),
-    { icon: Mail, label: 'Correo', value: contact.email, numeral: false },
+    ...(contact.location ? [{ icon: MapPin, label: 'Ubicación', value: contact.location }] : []),
+    ...(contact.schedule ? [{ icon: Clock, label: 'Horario', value: contact.schedule }] : []),
+    { icon: Mail, label: 'Correo', value: contact.email },
   ];
 
   return (
@@ -84,16 +76,6 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
               Contanos qué querés personalizar y te ayudamos a convertir la idea en un producto
               real.
             </p>
-
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-whatsapp text-whatsapp-foreground mt-7 inline-flex items-center gap-2.5 rounded-full px-5 py-3 font-semibold transition-transform hover:scale-105"
-            >
-              <WhatsAppIcon className="h-5 w-5" />
-              <span data-numeral>{formatPhone(contact.whatsapp)}</span>
-            </a>
           </div>
 
           <dl className="relative mt-10 grid gap-5 border-t border-white/15 pt-7 sm:grid-cols-2">
@@ -111,98 +93,47 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           </dl>
         </motion.div>
 
-        <motion.div
+        {/* Toda la tarjeta es el enlace: el bloque completo es la acción, no
+            un botón chico esperando a que le apunten. */}
+        <motion.a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={revealOnce}
           transition={{ ...easeOutExpo, delay: 0.1 }}
-          className="border-border/70 bg-card rounded-2xl border p-6 sm:rounded-[1.75rem] sm:p-9"
+          className="group bg-whatsapp text-whatsapp-foreground relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-transform duration-300 hover:-translate-y-1 sm:rounded-[1.75rem] sm:p-9"
         >
-          {state.status === 'success' ? (
-            <div className="flex h-full flex-col items-center justify-center py-10 text-center">
-              <div className="bg-success text-success-foreground flex h-14 w-14 items-center justify-center rounded-full text-2xl">
-                ✓
-              </div>
-              <p className="mt-5 text-xl font-bold">¡Listo, recibimos tu mensaje!</p>
-              <p className="text-muted-foreground mt-2 max-w-[38ch] text-sm">
-                Te contactamos a la brevedad. Si es urgente, escribinos directo por WhatsApp.
-              </p>
-            </div>
-          ) : (
-            <>
-              <h3 className="text-xl font-bold sm:text-2xl">Envianos un mensaje</h3>
-              <p className="text-muted-foreground mt-1.5 text-sm">
-                Te respondemos el mismo día hábil.
-              </p>
+          <WhatsAppIcon
+            className="pointer-events-none absolute -right-10 -bottom-12 h-56 w-56 opacity-10 transition-transform duration-500 group-hover:scale-110 sm:h-72 sm:w-72"
+            aria-hidden
+          />
 
-              <form action={formAction} className="mt-7 space-y-5">
-                {/* Honeypot (tarea 3.7): invisible para personas, un bot que autocompleta todo lo llena. */}
-                <div className="absolute -left-[9999px]" aria-hidden="true">
-                  <label htmlFor="website">No completar este campo</label>
-                  <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
-                </div>
+          <div className="relative">
+            <span className="flex items-center gap-2.5 text-xs font-semibold tracking-[0.18em] uppercase opacity-70">
+              <WhatsAppIcon className="h-4 w-4" />
+              Respuesta el mismo día hábil
+            </span>
+            <p className="mt-4 max-w-[16ch] text-3xl leading-[1.05] font-bold tracking-tight sm:text-4xl md:text-5xl">
+              Cotizá por WhatsApp
+            </p>
+            <p className="mt-4 max-w-[36ch] text-sm opacity-80 sm:text-base">
+              Escribinos con la idea, la cantidad y para cuándo lo necesitás. Te pasamos precio y
+              tiempo de entrega.
+            </p>
+          </div>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      placeholder="Tu nombre completo"
-                      className="h-11 rounded-xl"
-                      required
-                    />
-                    {state.fieldErrors?.name ? (
-                      <p className="text-destructive text-sm">{state.fieldErrors.name}</p>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Correo</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="tu@correo.com"
-                      className="h-11 rounded-xl"
-                      required
-                    />
-                    {state.fieldErrors?.email ? (
-                      <p className="text-destructive text-sm">{state.fieldErrors.email}</p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message">Mensaje</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    placeholder="Contanos qué querés personalizar, para cuándo y qué cantidad"
-                    className="min-h-[150px] rounded-xl"
-                    required
-                  />
-                  {state.fieldErrors?.message ? (
-                    <p className="text-destructive text-sm">{state.fieldErrors.message}</p>
-                  ) : null}
-                </div>
-
-                {state.status === 'error' && state.message ? (
-                  <p className="text-destructive text-sm">{state.message}</p>
-                ) : null}
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full rounded-full"
-                  disabled={isPending}
-                >
-                  {isPending ? 'Enviando...' : 'Enviar mensaje'}
-                </Button>
-              </form>
-            </>
-          )}
-        </motion.div>
+          <div className="relative mt-10 flex items-center justify-between gap-4 rounded-full bg-black/10 px-5 py-4 transition-colors duration-300 group-hover:bg-black/20 sm:px-6 sm:py-5">
+            <span data-numeral className="text-lg font-bold sm:text-2xl">
+              {formatPhone(contact.whatsapp)}
+            </span>
+            <ArrowUpRight
+              className="h-6 w-6 shrink-0 transition-transform duration-300 group-hover:rotate-45"
+              aria-hidden
+            />
+          </div>
+        </motion.a>
       </div>
     </Section>
   );
