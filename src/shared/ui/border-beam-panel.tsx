@@ -155,14 +155,28 @@ export function BorderBeamPanel({
       }
     >
       {glow ? (
-        <div
-          ref={glowRef}
-          aria-hidden
-          className="pointer-events-none absolute -inset-3 -z-10 overflow-hidden opacity-60 blur-xl"
-          style={{ borderRadius: radius + 12 }}
-        >
-          <div className={beamClass} style={glowStyle} />
-        </div>
+        // Dos capas: una amplia y muy difusa que tiñe el aire alrededor, y
+        // otra ajustada y menos borrosa que le da el núcleo brillante. Con
+        // una sola capa el resplandor quedaba casi todo tapado por la propia
+        // tarjeta —el desenfoque caía dentro del panel, no fuera— y desde
+        // afuera no se veía nada.
+        <>
+          <div
+            ref={glowRef}
+            aria-hidden
+            className="pointer-events-none absolute -inset-10 -z-10 overflow-hidden blur-3xl"
+            style={{ borderRadius: radius + 40 }}
+          >
+            <div className={beamClass} style={glowStyle} />
+          </div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-4 -z-10 overflow-hidden opacity-90 blur-lg"
+            style={{ borderRadius: radius + 16 }}
+          >
+            <div className={beamClass} style={glowStyle} />
+          </div>
+        </>
       ) : null}
 
       <div

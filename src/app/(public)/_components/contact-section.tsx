@@ -102,6 +102,7 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           radius={28}
           glow
           speed={7}
+          spread={45}
           color="#ffffff"
           glowColor="var(--whatsapp)"
           surface="var(--whatsapp)"
