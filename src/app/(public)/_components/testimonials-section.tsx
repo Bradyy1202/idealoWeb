@@ -2,7 +2,6 @@
 
 import { motion } from 'motion/react';
 import { Star } from 'lucide-react';
-import Balancer from 'react-wrap-balancer';
 import { Section } from '@/shared/ui/section';
 import { cn } from '@/shared/lib/cn';
 import type { TestimonialItem } from '@/modules/content/service';
@@ -73,8 +72,12 @@ export function TestimonialsSection({ testimonials }: { testimonials: Testimonia
               <span className="bg-mist h-px w-8" aria-hidden />
               Testimonios
             </span>
-            <blockquote className="mt-6 text-xl leading-snug font-semibold sm:text-3xl sm:leading-[1.2]">
-              <Balancer>&ldquo;{lead.content}&rdquo;</Balancer>
+            {/* text-balance por CSS y no con react-wrap-balancer: la regla
+                de globals.css solo cubre h1-h4, así que acá hace falta la
+                clase. Es lo mismo que hacía la librería, sin el <script>
+                inline que inyectaba en cada instancia. */}
+            <blockquote className="mt-6 text-xl leading-snug font-semibold text-balance sm:text-3xl sm:leading-[1.2]">
+              &ldquo;{lead.content}&rdquo;
             </blockquote>
           </div>
 

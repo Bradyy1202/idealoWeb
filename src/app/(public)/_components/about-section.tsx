@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'motion/react';
-import Balancer from 'react-wrap-balancer';
 import { Section } from '@/shared/ui/section';
 import { AetherRibbonMesh } from '@/shared/ui/aether-ribbon-mesh';
 import type { AboutSettingsInput } from '@/modules/content/schema';
@@ -31,7 +30,7 @@ export function AboutSection({ about }: { about: AboutSettingsInput }) {
             Quiénes somos
           </span>
           <h2 className="mt-4 max-w-[16ch] text-3xl leading-[1.05] tracking-tight sm:text-4xl md:text-5xl lg:text-[3.5rem]">
-            <Balancer>{about.title}</Balancer>
+            {about.title}
           </h2>
           <p className="text-muted-foreground mt-6 max-w-[52ch] text-base sm:text-lg">
             {about.body}

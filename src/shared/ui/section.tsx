@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import Balancer from 'react-wrap-balancer';
 import { cn } from '@/shared/lib/cn';
 import { Container } from './container';
 
@@ -96,7 +95,7 @@ export function SectionHeading({
             isCenter && 'max-w-[18ch]',
           )}
         >
-          <Balancer>{title}</Balancer>
+          {title}
         </h2>
       </div>
 
@@ -107,9 +106,7 @@ export function SectionHeading({
           )}
         >
           {description ? (
-            <p className="text-muted-foreground text-base sm:text-lg">
-              <Balancer>{description}</Balancer>
-            </p>
+            <p className="text-muted-foreground text-base text-balance sm:text-lg">{description}</p>
           ) : null}
           {action}
         </div>
