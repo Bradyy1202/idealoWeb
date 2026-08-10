@@ -51,14 +51,16 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={revealOnce}
           transition={easeOutExpo}
-          className="bg-ink text-ink-foreground relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 sm:rounded-[1.75rem] sm:p-9"
+          className="bg-navy text-navy-foreground relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 sm:rounded-[1.75rem] sm:p-9"
         >
-          {/* Reemplaza las líneas decorativas estáticas que había acá: las
-              cintas reaccionan al puntero y a cada clic sobre el bloque. */}
+          {/* Cintas reactivas al puntero y a los clics sobre el bloque.
+              Recoloreadas para el fondo azul: el mismo azul de antes se
+              perdía contra la superficie, así que van tonos claros y cálidos
+              que contrastan (la mezcla es aditiva, suman luz). */}
           <AetherRibbonMesh
-            colors={['#1d5fa4', '#3f5133', '#c04521', '#dce4ea']}
+            colors={['#5fa8e8', '#dce4ea', '#c04521', '#25d366']}
             ribbons={4}
-            opacity={0.45}
+            opacity={0.4}
           />
 
           <div className="relative">

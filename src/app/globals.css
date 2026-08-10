@@ -73,6 +73,11 @@
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
 
+  /* Azul profundo de marca como superficie de bloque, para cuando el
+     casi-negro de --ink resulta demasiado apagado. */
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+
   /* Gris azulado, para alternar con el lienzo/crema entre secciones (así lo
      hace releaf con su franja de marcas asociadas). */
   --color-mist: var(--mist);
@@ -138,6 +143,11 @@
 
   /* Tinta: el mismo verde-texto pero como fondo de bloque (nav, cierres). */
   --ink: #17220f;
+  /* Misma familia que --primary pero mucho más oscuro: el bloque se lee
+     claramente azul en vez de negro, y da 11.4:1 con el texto crema encima
+     (mínimo AA: 4.5:1). */
+  --navy: #12395f;
+  --navy-foreground: #fdfbf6;
   --ink-foreground: #fdfbf6;
 
   /* Gris azulado — la franja de "marcas asociadas" de releaf.bio usa este
