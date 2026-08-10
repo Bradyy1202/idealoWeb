@@ -27,6 +27,12 @@ type BorderBeamPanelProps = {
   hoverBoost?: number;
   /** Color del haz. */
   color?: string;
+  /**
+   * Color del halo. Por defecto sigue al del haz, pero se separan cuando el
+   * haz necesita contrastar contra la superficie del panel y el halo contra
+   * el fondo de la página, que no son el mismo color.
+   */
+  glowColor?: string;
   /** Fondo del interior del panel. */
   surface?: string;
   /** Ancho del arco de cada haz, en grados. Menos es más concentrado. */
@@ -65,6 +71,7 @@ export function BorderBeamPanel({
   interactive = true,
   hoverBoost = 3,
   color = 'var(--primary)',
+  glowColor,
   surface = 'var(--card)',
   spread = 22,
   border = 'var(--border)',
@@ -107,20 +114,25 @@ export function BorderBeamPanel({
   // Arcos brillantes repartidos en la vuelta. Cada haz es una franja corta
   // que se desvanece hacia los dos lados, y entre ellas el borde queda
   // apenas insinuado.
-  const stops: string[] = [];
-  const count = Math.max(1, beams);
-  for (let i = 0; i < count; i += 1) {
-    const center = (360 / count) * i;
-    stops.push(
-      `transparent ${center - spread}deg`,
-      `${color} ${center}deg`,
-      `transparent ${center + spread}deg`,
-    );
-  }
+  const gradientFor = (tone: string) => {
+    const stops: string[] = [];
+    const count = Math.max(1, beams);
+    for (let i = 0; i < count; i += 1) {
+      const center = (360 / count) * i;
+      stops.push(
+        `transparent ${center - spread}deg`,
+        `${tone} ${center}deg`,
+        `transparent ${center + spread}deg`,
+      );
+    }
+    return `conic-gradient(from var(--beam-angle, 0deg), ${stops.join(', ')})`;
+  };
 
-  const beamStyle: CSSProperties = {
-    background: `conic-gradient(from var(--beam-angle, 0deg), ${stops.join(', ')})`,
-    ...(interactive ? {} : ({ '--beam-duration': `${speed}s` } as CSSProperties)),
+  const durationVar = interactive ? {} : ({ '--beam-duration': `${speed}s` } as CSSProperties);
+  const beamStyle: CSSProperties = { background: gradientFor(color), ...durationVar };
+  const glowStyle: CSSProperties = {
+    background: gradientFor(glowColor ?? color),
+    ...durationVar,
   };
   const beamClass = cn('absolute inset-0', !interactive && 'border-beam-spin');
 
@@ -146,10 +158,10 @@ export function BorderBeamPanel({
         <div
           ref={glowRef}
           aria-hidden
-          className="pointer-events-none absolute -inset-2 -z-10 overflow-hidden opacity-45 blur-xl"
-          style={{ borderRadius: radius + 10 }}
+          className="pointer-events-none absolute -inset-3 -z-10 overflow-hidden opacity-60 blur-xl"
+          style={{ borderRadius: radius + 12 }}
         >
-          <div className={beamClass} style={beamStyle} />
+          <div className={beamClass} style={glowStyle} />
         </div>
       ) : null}
 

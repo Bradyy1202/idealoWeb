@@ -92,9 +92,10 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
 
         {/* El haz recorriendo el borde marca cuál es la acción principal de
             la página, y acelera al acercar el puntero. */}
-        {/* El haz va en blanco, no en el verde de la tarjeta: con el mismo
-            color de la superficie no se distinguía del fondo y solo se veía
-            el halo. */}
+        {/* Haz blanco y halo verde, a propósito distintos: el haz corre sobre
+            la superficie verde de la tarjeta (en verde se perdería) y el halo
+            se proyecta sobre el fondo crema de la página (en blanco sería
+            invisible). Cada uno contrasta contra lo que tiene detrás. */}
         <BorderBeamPanel
           beams={2}
           thickness={2}
@@ -102,6 +103,7 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           glow
           speed={7}
           color="#ffffff"
+          glowColor="var(--whatsapp)"
           surface="var(--whatsapp)"
         >
           {/* Toda la tarjeta es el enlace: el bloque completo es la acción, no
