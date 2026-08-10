@@ -78,6 +78,10 @@
   --color-navy: var(--navy);
   --color-navy-foreground: var(--navy-foreground);
 
+  /* Celeste: acentos sobre las superficies azules oscuras (--navy), donde
+     --primary queda a 1.8:1 y prácticamente desaparece. */
+  --color-sky: var(--sky);
+
   /* Gris azulado, para alternar con el lienzo/crema entre secciones (así lo
      hace releaf con su franja de marcas asociadas). */
   --color-mist: var(--mist);
@@ -148,6 +152,8 @@
      (mínimo AA: 4.5:1). */
   --navy: #12395f;
   --navy-foreground: #fdfbf6;
+  /* Da 4.65:1 sobre --navy, por encima del mínimo AA de 4.5:1. */
+  --sky: #5fa8e8;
   --ink-foreground: #fdfbf6;
 
   /* Gris azulado — la franja de "marcas asociadas" de releaf.bio usa este

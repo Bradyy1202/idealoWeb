@@ -53,7 +53,7 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
 
   return (
     <footer className="relative z-10 px-3 pb-3 md:px-5 md:pb-5">
-      <div className="bg-ink text-ink-foreground relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem]">
+      <div className="bg-navy text-navy-foreground relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem]">
         <Container className="relative grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:gap-12 lg:py-20">
           <div className="space-y-4">
             <Logo height={26} variant="light" />
@@ -103,7 +103,7 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
                   href={`mailto:${contact.email}`}
                   className="flex items-start gap-3 transition-colors hover:text-white"
                 >
-                  <Mail className="text-primary mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  <Mail className="text-sky mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                   {contact.email}
                 </a>
               </li>
@@ -114,19 +114,19 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
                   rel="noopener noreferrer"
                   className="flex items-start gap-3 transition-colors hover:text-white"
                 >
-                  <WhatsAppIcon className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                  <WhatsAppIcon className="text-sky mt-0.5 h-4 w-4 shrink-0" />
                   <span data-numeral>{formatPhone(contact.whatsapp)}</span>
                 </a>
               </li>
               {contact.location ? (
                 <li className="flex items-start gap-3">
-                  <MapPin className="text-primary mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  <MapPin className="text-sky mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                   {contact.location}
                 </li>
               ) : null}
               {contact.schedule ? (
                 <li className="flex items-start gap-3">
-                  <Clock className="text-primary mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  <Clock className="text-sky mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                   {contact.schedule}
                 </li>
               ) : null}
@@ -160,7 +160,7 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
                 el texto quedaba encima del trazo y no se leía ninguno. */}
             <div className="text-xs text-white/60 sm:text-right">
               <p data-numeral>© {new Date().getFullYear()} Idealo. Envíos a todo Costa Rica.</p>
-              <p className="mt-1 text-white/40">
+              <p className="mt-1 text-white/60">
                 Los precios son referenciales. La cotización final se confirma por WhatsApp.
               </p>
             </div>
@@ -181,7 +181,7 @@ export function SiteFooter({ contact }: { contact: ContactSettingsInput }) {
             fill="none"
             stroke="currentColor"
             strokeWidth="1.2"
-            className="text-primary"
+            className="text-sky"
             style={{
               fontSize: '190px',
               fontWeight: 800,
