@@ -54,13 +54,14 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           className="bg-navy text-navy-foreground relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 sm:rounded-[1.75rem] sm:p-9"
         >
           {/* Cintas reactivas al puntero y a los clics sobre el bloque.
-              Recoloreadas para el fondo azul: el mismo azul de antes se
-              perdía contra la superficie, así que van tonos claros y cálidos
-              que contrastan (la mezcla es aditiva, suman luz). */}
+              Toda la paleta en la familia del celeste, del más claro al más
+              saturado: el coral que había antes ensuciaba el azul al
+              mezclarse (la mezcla es aditiva y sumaba un marrón sucio donde
+              las cintas se cruzaban). Sin colores cálidos no aparece. */}
           <AetherRibbonMesh
-            colors={['#5fa8e8', '#dce4ea', '#c04521', '#25d366']}
+            colors={['#8ecbf0', '#5fa8e8', '#dce4ea', '#3d7fb8']}
             ribbons={4}
-            opacity={0.4}
+            opacity={0.45}
           />
 
           <div className="relative">
