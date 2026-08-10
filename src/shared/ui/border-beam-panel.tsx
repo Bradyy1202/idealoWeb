@@ -14,14 +14,25 @@ type BorderBeamPanelProps = {
   radius?: number;
   /** Halo difuso alrededor del panel. */
   glow?: boolean;
-  /** Segundos por vuelta en reposo. Menos es más rápido. */
+  /** Segundos por vuelta en reposo. Más es más lento. */
   speed?: number;
+  /**
+   * Si el haz acelera al acercar el puntero. Cuando es `false` la vuelta la
+   * mueve una animación CSS y el componente no monta ningún bucle de
+   * JavaScript: es lo que hay que usar cuando se repite muchas veces en la
+   * misma pantalla (una grilla de productos, por ejemplo).
+   */
+  interactive?: boolean;
   /** Multiplicador de velocidad mientras el puntero está encima. */
   hoverBoost?: number;
-  /** Color del haz. Por defecto, el azul de marca. */
+  /** Color del haz. */
   color?: string;
   /** Fondo del interior del panel. */
   surface?: string;
+  /** Ancho del arco de cada haz, en grados. Menos es más concentrado. */
+  spread?: number;
+  /** Color del borde de base entre haz y haz. */
+  border?: string;
 };
 
 /**
@@ -29,13 +40,19 @@ type BorderBeamPanelProps = {
  * detrás del contenido y del que solo se ve el anillo del padding, porque la
  * superficie interior lo tapa.
  *
- * El ángulo lo mueve `requestAnimationFrame`, no una animación CSS, porque
- * el haz acelera al entrar el puntero y frena al salir: `animation-duration`
- * no se puede interpolar, así que con CSS el cambio de velocidad daría un
- * salto en vez de una rampa.
+ * Lo que gira es el ángulo del degradado (`from var(--beam-angle)`), no el
+ * elemento: así la capa mide exactamente lo que el panel. La primera versión
+ * rotaba un elemento tres veces más grande, que multiplicaba la superficie a
+ * pintar justo donde más se repite el componente.
  *
- * Con `prefers-reduced-motion` el haz se queda quieto en una posición fija:
- * el borde sigue viéndose iluminado, pero no gira.
+ * Con `interactive` el ángulo lo mueve `requestAnimationFrame`, porque el
+ * haz acelera al entrar el puntero y frena al salir, y `animation-duration`
+ * no se puede interpolar: con CSS el cambio de velocidad daría un salto.
+ * Sin `interactive` lo mueve una animación CSS sobre `--beam-angle`
+ * (registrada con `@property` en globals.css) y no hay JavaScript por panel.
+ *
+ * Con `prefers-reduced-motion` el haz queda quieto en los dos modos: el
+ * borde sigue viéndose iluminado, pero no gira.
  */
 export function BorderBeamPanel({
   children,
@@ -45,15 +62,19 @@ export function BorderBeamPanel({
   radius = 18,
   glow = false,
   speed = 6,
+  interactive = true,
   hoverBoost = 3,
   color = 'var(--primary)',
   surface = 'var(--card)',
+  spread = 22,
+  border = 'var(--border)',
 }: BorderBeamPanelProps) {
   const beamRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const isHoveredRef = useRef(false);
 
   useEffect(() => {
+    if (!interactive) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let angle = 0;
@@ -81,7 +102,7 @@ export function BorderBeamPanel({
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [speed, hoverBoost]);
+  }, [interactive, speed, hoverBoost]);
 
   // Arcos brillantes repartidos en la vuelta. Cada haz es una franja corta
   // que se desvanece hacia los dos lados, y entre ellas el borde queda
@@ -90,31 +111,36 @@ export function BorderBeamPanel({
   const count = Math.max(1, beams);
   for (let i = 0; i < count; i += 1) {
     const center = (360 / count) * i;
-    const half = 22;
     stops.push(
-      `transparent ${center - half}deg`,
+      `transparent ${center - spread}deg`,
       `${color} ${center}deg`,
-      `transparent ${center + half}deg`,
+      `transparent ${center + spread}deg`,
     );
   }
-  const beamGradient = `conic-gradient(from var(--beam-angle, 0deg), ${stops.join(', ')})`;
 
   const beamStyle: CSSProperties = {
-    background: beamGradient,
-    // inset negativo: el degradado cónico debe cubrir el rectángulo entero
-    // incluso rotando, o se verían esquinas vacías.
-    inset: '-50%',
+    background: `conic-gradient(from var(--beam-angle, 0deg), ${stops.join(', ')})`,
+    ...(interactive ? {} : ({ '--beam-duration': `${speed}s` } as CSSProperties)),
   };
+  const beamClass = cn('absolute inset-0', !interactive && 'border-beam-spin');
 
   return (
     <div
       className={cn('relative', className)}
-      onMouseEnter={() => {
-        isHoveredRef.current = true;
-      }}
-      onMouseLeave={() => {
-        isHoveredRef.current = false;
-      }}
+      onMouseEnter={
+        interactive
+          ? () => {
+              isHoveredRef.current = true;
+            }
+          : undefined
+      }
+      onMouseLeave={
+        interactive
+          ? () => {
+              isHoveredRef.current = false;
+            }
+          : undefined
+      }
     >
       {glow ? (
         <div
@@ -123,22 +149,22 @@ export function BorderBeamPanel({
           className="pointer-events-none absolute -inset-2 -z-10 overflow-hidden opacity-45 blur-xl"
           style={{ borderRadius: radius + 10 }}
         >
-          <div className="absolute" style={beamStyle} />
+          <div className={beamClass} style={beamStyle} />
         </div>
       ) : null}
 
       <div
-        className="relative overflow-hidden"
+        className="relative h-full overflow-hidden"
         style={{ borderRadius: radius, padding: thickness }}
       >
         {/* Borde tenue de base: sin esto, entre haz y haz el contorno
             desaparece del todo y el panel parece recortado. */}
         <div
           aria-hidden
-          className="border-border/60 pointer-events-none absolute inset-0 border"
-          style={{ borderRadius: radius, borderWidth: thickness }}
+          className="pointer-events-none absolute inset-0"
+          style={{ borderRadius: radius, border: `${thickness}px solid ${border}` }}
         />
-        <div ref={beamRef} aria-hidden className="absolute" style={beamStyle} />
+        <div ref={beamRef} aria-hidden className={beamClass} style={beamStyle} />
 
         <div
           className="relative h-full w-full overflow-hidden"

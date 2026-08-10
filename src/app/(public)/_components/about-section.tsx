@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import Balancer from 'react-wrap-balancer';
 import { Section } from '@/shared/ui/section';
+import { AetherRibbonMesh } from '@/shared/ui/aether-ribbon-mesh';
 import type { AboutSettingsInput } from '@/modules/content/schema';
 
 /**
@@ -44,29 +45,9 @@ export function AboutSection({ about }: { about: AboutSettingsInput }) {
           transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
           className="bg-card border-border/70 relative aspect-[4/3] overflow-hidden rounded-2xl border sm:rounded-[1.75rem]"
         >
-          <svg className="absolute inset-0 h-full w-full" aria-hidden>
-            <defs>
-              <pattern id="about-halftone" width="16" height="16" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.5" className="fill-ink/15" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#about-halftone)" />
-          </svg>
-
-          {/* Tintas superpuestas: al mezclarse muestran un color nuevo, como
-              la tinta de sublimación al fijarse sobre el material. */}
-          <div
-            className="bg-primary absolute top-[18%] left-[14%] h-[46%] w-[46%] rounded-full mix-blend-multiply"
-            aria-hidden
-          />
-          <div
-            className="bg-coral absolute top-[32%] left-[34%] h-[46%] w-[46%] rounded-full mix-blend-multiply"
-            aria-hidden
-          />
-          <div
-            className="bg-mist absolute top-[13%] left-[42%] h-[42%] w-[42%] rounded-full mix-blend-multiply"
-            aria-hidden
-          />
+          {/* Haz de hilos paralelos que fluyen en onda y siguen al puntero.
+              Reemplaza las tintas superpuestas que había acá. */}
+          <AetherRibbonMesh mode="lines" ribbons={22} colors={['#1d5fa4']} opacity={0.55} />
 
           <figcaption className="text-muted-foreground absolute right-5 bottom-5 left-5 text-[0.65rem] tracking-[0.16em] uppercase">
             Sublimación · San Carlos, Costa Rica

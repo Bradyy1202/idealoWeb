@@ -194,6 +194,30 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Haz del borde (src/shared/ui/border-beam-panel.tsx), modo no interactivo.
+
+   `--beam-angle` se registra con `@property` para que el navegador sepa que
+   es un ángulo y pueda interpolarlo: sin el registro, una propiedad
+   personalizada se trata como texto y la animación saltaría de 0deg a 360deg
+   sin pasar por el medio.
+--------------------------------------------------------------------------- */
+@property --beam-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+.border-beam-spin {
+  animation: border-beam-spin var(--beam-duration, 8s) linear infinite;
+}
+
+/* ---------------------------------------------------------------------------
    Baraja en abanico (src/shared/ui/card-fan-carousel.tsx). El componente
    original posiciona las tarjetas con GSAP pero da por hecho estas dos
    clases, que no venían con él: sin ellas las tarjetas se apilan en flujo
@@ -284,5 +308,9 @@
 
   .animate-marquee [data-marquee-clone] {
     display: none;
+  }
+
+  .border-beam-spin {
+    animation: none;
   }
 }

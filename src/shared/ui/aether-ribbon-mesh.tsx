@@ -7,10 +7,15 @@ type AetherRibbonMeshProps = {
   className?: string;
   /** Colores de las cintas, de atrás hacia adelante. */
   colors?: readonly string[];
-  /** Cantidad de cintas superpuestas. */
+  /** Cantidad de cintas (modo `ribbons`) o de líneas (modo `lines`). */
   ribbons?: number;
-  /** Opacidad de cada cinta. */
+  /** Opacidad general. */
   opacity?: number;
+  /**
+   * `ribbons`: superficies rellenas con degradado, para fondos oscuros.
+   * `lines`: hilos paralelos finos que fluyen en onda, para fondos claros.
+   */
+  mode?: 'ribbons' | 'lines';
 };
 
 const DEFAULT_COLORS = ['#1d5fa4', '#3f5133', '#c04521', '#dce4ea'] as const;
@@ -38,6 +43,7 @@ export function AetherRibbonMesh({
   colors = DEFAULT_COLORS,
   ribbons = 4,
   opacity = 0.5,
+  mode = 'ribbons',
 }: AetherRibbonMeshProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -73,22 +79,32 @@ export function AetherRibbonMesh({
       Math.sin(x * 3.1 - t * 0.9 + seed * 2.3) * 0.28 +
       Math.sin(x * 6.3 + t * 1.4 + seed * 4.1) * 0.12;
 
-    const draw = (time: number) => {
-      const t = time / 1000;
-      context.clearRect(0, 0, width, height);
+    /** Desvío de una fila por el puntero y por las ondas de choque activas. */
+    const disturbance = (p: number, t: number, weight: number) => {
+      if (prefersReducedMotion) return 0;
+
+      // El puntero empuja la línea: cuanto más cerca en horizontal, más se
+      // desvía hacia él.
+      const dx = p - pointer.x;
+      let offset = (pointer.y - 0.5) * height * 0.45 * Math.exp(-(dx * dx) / 0.02) * weight;
+
+      // Cada onda de choque desplaza la línea en un anillo que se expande y
+      // se apaga.
+      for (const wave of shockwaves) {
+        const age = t - wave.born;
+        const radius = age * 0.9;
+        const distance = Math.abs(p - wave.x);
+        const ring = Math.exp(-((distance - radius) ** 2) / 0.004);
+        offset -= ring * height * 0.18 * (1 - age / 1.6);
+      }
+
+      return offset;
+    };
+
+    const drawRibbons = (t: number, steps: number) => {
       // 'lighter' sobre fondo oscuro: donde dos cintas se cruzan el color se
       // suma, que es justo el efecto de superposición que se busca.
       context.globalCompositeOperation = 'lighter';
-
-      pointer.x += (pointer.tx - pointer.x) * 0.06;
-      pointer.y += (pointer.ty - pointer.y) * 0.06;
-
-      // Las ondas viven 1.6s; se descartan por el final para no reordenar.
-      for (let i = shockwaves.length - 1; i >= 0; i -= 1) {
-        if (t - shockwaves[i]!.born > 1.6) shockwaves.splice(i, 1);
-      }
-
-      const steps = Math.max(24, Math.round(width / 14));
 
       for (let r = 0; r < ribbons; r += 1) {
         const seed = r * 12.9898;
@@ -102,25 +118,10 @@ export function AetherRibbonMesh({
         for (let s = 0; s <= steps; s += 1) {
           const p = s / steps;
           const x = p * width;
-          let y = baseY + noise(p * 3.2, prefersReducedMotion ? 0 : t, seed) * amplitude;
-
-          if (!prefersReducedMotion) {
-            // El puntero empuja la cinta: cuanto más cerca en horizontal,
-            // más se desvía hacia él.
-            const dx = p - pointer.x;
-            const falloff = Math.exp(-(dx * dx) / 0.02);
-            y += (pointer.y - 0.5) * height * 0.45 * falloff * (0.4 + depth * 0.6);
-
-            // Cada onda de choque desplaza la cinta en un anillo que se
-            // expande y se apaga.
-            for (const wave of shockwaves) {
-              const age = t - wave.born;
-              const radius = age * 0.9;
-              const distance = Math.abs(p - wave.x);
-              const ring = Math.exp(-((distance - radius) ** 2) / 0.004);
-              y -= ring * height * 0.18 * (1 - age / 1.6);
-            }
-          }
+          const y =
+            baseY +
+            noise(p * 3.2, prefersReducedMotion ? 0 : t, seed) * amplitude +
+            disturbance(p, t, 0.4 + depth * 0.6);
 
           if (s === 0) context.moveTo(x, y);
           else context.lineTo(x, y);
@@ -140,8 +141,78 @@ export function AetherRibbonMesh({
         context.fill();
       }
 
-      context.globalAlpha = 1;
       context.globalCompositeOperation = 'source-over';
+    };
+
+    /**
+     * Hilos paralelos. Todas las líneas siguen LA MISMA onda; lo único que
+     * cambia entre ellas es cuánto la amplifican, así el haz se junta y se
+     * abre sin que dos hilos se crucen nunca.
+     *
+     * Darle a cada línea su propia semilla —que fue el primer intento— las
+     * hacía cruzarse y el resultado era una maraña, no un haz.
+     *
+     * La diferencia de amplificación entre líneas contiguas es ~0.04 del
+     * total, muy por debajo de la separación entre ellas: de ahí que no se
+     * toquen ni en el punto de máxima onda.
+     */
+    const drawLines = (t: number, steps: number) => {
+      const lines = Math.max(2, ribbons);
+      const color = colors[0]!;
+      const spacing = height / (lines + 2);
+      const time = prefersReducedMotion ? 0 : t * 0.45;
+      const amplitude = height * 0.16;
+
+      for (let l = 0; l < lines; l += 1) {
+        const depth = l / (lines - 1);
+        // Más peso en el centro del haz, casi nada en los bordes.
+        const weight = Math.sin(depth * Math.PI);
+        const baseY = spacing * (l + 1.5);
+        // Monótona con la posición: garantiza el orden vertical.
+        const gain = 0.55 + depth * 0.75;
+
+        context.beginPath();
+
+        for (let s = 0; s <= steps; s += 1) {
+          const p = s / steps;
+          const x = p * width;
+          const y =
+            baseY +
+            noise(p * 2.2, time, 0) * amplitude * gain +
+            // Inclinación suave del haz completo, para que no quede
+            // horizontal y muerto de lado a lado.
+            (p - 0.5) * height * 0.06 * gain +
+            disturbance(p, t, 0.2 + weight * 0.45);
+
+          if (s === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        }
+
+        context.strokeStyle = color;
+        context.lineWidth = 0.6 + weight * 1.2;
+        context.globalAlpha = opacity * (0.1 + weight * 0.9);
+        context.stroke();
+      }
+    };
+
+    const draw = (time: number) => {
+      const t = time / 1000;
+      context.clearRect(0, 0, width, height);
+
+      pointer.x += (pointer.tx - pointer.x) * 0.06;
+      pointer.y += (pointer.ty - pointer.y) * 0.06;
+
+      // Las ondas viven 1.6s; se descartan por el final para no reordenar.
+      for (let i = shockwaves.length - 1; i >= 0; i -= 1) {
+        if (t - shockwaves[i]!.born > 1.6) shockwaves.splice(i, 1);
+      }
+
+      const steps = Math.max(24, Math.round(width / 10));
+
+      if (mode === 'lines') drawLines(t, steps);
+      else drawRibbons(t, steps);
+
+      context.globalAlpha = 1;
     };
 
     const loop = (time: number) => {
@@ -207,7 +278,7 @@ export function AetherRibbonMesh({
       parent?.removeEventListener('pointerleave', onPointerLeave);
       parent?.removeEventListener('pointerdown', onPointerDown);
     };
-  }, [colors, ribbons, opacity]);
+  }, [colors, ribbons, opacity, mode]);
 
   return (
     <canvas
