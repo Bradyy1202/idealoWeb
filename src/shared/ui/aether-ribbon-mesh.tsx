@@ -220,11 +220,11 @@ export function AetherRibbonMesh({
       frame = requestAnimationFrame(loop);
     };
 
-    // Los eventos se escuchan en `window`, no en el elemento padre: como
-    // fondo a pantalla completa el canvas va detrás de todo y con
-    // `pointer-events: none`, así que nunca recibiría el puntero. Las
-    // coordenadas se calculan igual contra el rectángulo del canvas, y se
-    // acotan para que un puntero muy lejos no dispare un desvío enorme.
+    // Los eventos se escuchan en el elemento padre (la tarjeta que contiene
+    // la malla), no en `window`: así solo reacciona cuando el puntero está
+    // realmente encima, y no a cualquier movimiento en cualquier parte de la
+    // página. El acotado protege del caso en que el puntero sale del
+    // contenedor justo antes de que llegue el evento.
     const clamp = (value: number) => Math.max(-0.3, Math.min(1.3, value));
 
     const onPointerMove = (event: PointerEvent) => {
@@ -263,9 +263,10 @@ export function AetherRibbonMesh({
       return () => resizeObserver.disconnect();
     }
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
-    document.addEventListener('pointerleave', onPointerLeave);
+    const parent = canvas.parentElement;
+    parent?.addEventListener('pointermove', onPointerMove, { passive: true });
+    parent?.addEventListener('pointerdown', onPointerDown, { passive: true });
+    parent?.addEventListener('pointerleave', onPointerLeave);
 
     const intersectionObserver = new IntersectionObserver((entries) => {
       const isVisible = entries[0]?.isIntersecting ?? true;
@@ -282,9 +283,9 @@ export function AetherRibbonMesh({
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('pointerleave', onPointerLeave);
+      parent?.removeEventListener('pointermove', onPointerMove);
+      parent?.removeEventListener('pointerdown', onPointerDown);
+      parent?.removeEventListener('pointerleave', onPointerLeave);
     };
   }, [colors, ribbons, opacity, mode]);
 
