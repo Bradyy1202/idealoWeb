@@ -4,6 +4,8 @@ import { motion } from 'motion/react';
 import { ArrowUpRight, Clock, Mail, MapPin } from 'lucide-react';
 import { Section } from '@/shared/ui/section';
 import { WhatsAppIcon } from '@/shared/ui/whatsapp-icon';
+import { AetherRibbonMesh } from '@/shared/ui/aether-ribbon-mesh';
+import { BorderBeamPanel } from '@/shared/ui/border-beam-panel';
 import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import { easeOutExpo, revealOnce } from '@/shared/lib/motion-presets';
 import type { ContactSettingsInput } from '@/modules/content/schema';
@@ -51,18 +53,13 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           transition={easeOutExpo}
           className="bg-ink text-ink-foreground relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 sm:rounded-[1.75rem] sm:p-9"
         >
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full opacity-20"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden
-          >
-            <g stroke="currentColor" strokeWidth="0.15" fill="none">
-              <path d="M0 60 Q 50 10 100 35" />
-              <path d="M0 78 Q 50 34 100 62" />
-              <path d="M20 100 Q 48 44 58 0" />
-            </g>
-          </svg>
+          {/* Reemplaza las líneas decorativas estáticas que había acá: las
+              cintas reaccionan al puntero y a cada clic sobre el bloque. */}
+          <AetherRibbonMesh
+            colors={['#1d5fa4', '#3f5133', '#c04521', '#dce4ea']}
+            ribbons={4}
+            opacity={0.45}
+          />
 
           <div className="relative">
             <span className="text-mist flex items-center gap-3 text-xs font-semibold tracking-[0.18em] uppercase">
@@ -93,47 +90,62 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
           </dl>
         </motion.div>
 
-        {/* Toda la tarjeta es el enlace: el bloque completo es la acción, no
-            un botón chico esperando a que le apunten. */}
-        <motion.a
-          href={whatsappHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={revealOnce}
-          transition={{ ...easeOutExpo, delay: 0.1 }}
-          className="group bg-whatsapp text-whatsapp-foreground relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-transform duration-300 hover:-translate-y-1 sm:rounded-[1.75rem] sm:p-9"
+        {/* El haz recorriendo el borde marca cuál es la acción principal de
+            la página, y acelera al acercar el puntero. */}
+        {/* El haz va en blanco, no en el verde de la tarjeta: con el mismo
+            color de la superficie no se distinguía del fondo y solo se veía
+            el halo. */}
+        <BorderBeamPanel
+          beams={2}
+          thickness={2}
+          radius={28}
+          glow
+          speed={7}
+          color="#ffffff"
+          surface="var(--whatsapp)"
         >
-          <WhatsAppIcon
-            className="pointer-events-none absolute -right-10 -bottom-12 h-56 w-56 opacity-10 transition-transform duration-500 group-hover:scale-110 sm:h-72 sm:w-72"
-            aria-hidden
-          />
-
-          <div className="relative">
-            <span className="flex items-center gap-2.5 text-xs font-semibold tracking-[0.18em] uppercase opacity-70">
-              <WhatsAppIcon className="h-4 w-4" />
-              Respuesta el mismo día hábil
-            </span>
-            <p className="mt-4 max-w-[16ch] text-3xl leading-[1.05] font-bold tracking-tight sm:text-4xl md:text-5xl">
-              Cotizá por WhatsApp
-            </p>
-            <p className="mt-4 max-w-[36ch] text-sm opacity-80 sm:text-base">
-              Escribinos con la idea, la cantidad y para cuándo lo necesitás. Te pasamos precio y
-              tiempo de entrega.
-            </p>
-          </div>
-
-          <div className="relative mt-10 flex items-center justify-between gap-4 rounded-full bg-black/10 px-5 py-4 transition-colors duration-300 group-hover:bg-black/20 sm:px-6 sm:py-5">
-            <span data-numeral className="text-lg font-bold sm:text-2xl">
-              {formatPhone(contact.whatsapp)}
-            </span>
-            <ArrowUpRight
-              className="h-6 w-6 shrink-0 transition-transform duration-300 group-hover:rotate-45"
+          {/* Toda la tarjeta es el enlace: el bloque completo es la acción, no
+              un botón chico esperando a que le apunten. */}
+          <motion.a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={revealOnce}
+            transition={{ ...easeOutExpo, delay: 0.1 }}
+            className="group bg-whatsapp text-whatsapp-foreground relative flex h-full flex-col justify-between overflow-hidden p-6 sm:p-9"
+          >
+            <WhatsAppIcon
+              className="pointer-events-none absolute -right-10 -bottom-12 h-56 w-56 opacity-10 transition-transform duration-500 group-hover:scale-110 sm:h-72 sm:w-72"
               aria-hidden
             />
-          </div>
-        </motion.a>
+
+            <div className="relative">
+              <span className="flex items-center gap-2.5 text-xs font-semibold tracking-[0.18em] uppercase opacity-70">
+                <WhatsAppIcon className="h-4 w-4" />
+                Respuesta el mismo día hábil
+              </span>
+              <p className="mt-4 max-w-[16ch] text-3xl leading-[1.05] font-bold tracking-tight sm:text-4xl md:text-5xl">
+                Cotizá por WhatsApp
+              </p>
+              <p className="mt-4 max-w-[36ch] text-sm opacity-80 sm:text-base">
+                Escribinos con la idea, la cantidad y para cuándo lo necesitás. Te pasamos precio y
+                tiempo de entrega.
+              </p>
+            </div>
+
+            <div className="relative mt-10 flex items-center justify-between gap-4 rounded-full bg-black/10 px-5 py-4 transition-colors duration-300 group-hover:bg-black/20 sm:px-6 sm:py-5">
+              <span data-numeral className="text-lg font-bold sm:text-2xl">
+                {formatPhone(contact.whatsapp)}
+              </span>
+              <ArrowUpRight
+                className="h-6 w-6 shrink-0 transition-transform duration-300 group-hover:rotate-45"
+                aria-hidden
+              />
+            </div>
+          </motion.a>
+        </BorderBeamPanel>
       </div>
     </Section>
   );
