@@ -1,4 +1,5 @@
 import { getContactSettings } from '@/modules/content/service';
+import { PageBackdrop } from './_components/page-backdrop';
 import { SiteFooter } from './_components/site-footer';
 import { SiteNav } from './_components/site-nav';
 
@@ -13,8 +14,10 @@ export default async function PublicLayout({ children }: Readonly<{ children: Re
 
   return (
     <>
+      <PageBackdrop />
       <SiteNav contact={contact} />
-      <main>{children}</main>
+      {/* relative z-10: el contenido va por delante del fondo animado. */}
+      <main className="relative z-10">{children}</main>
       <SiteFooter contact={contact} />
     </>
   );

@@ -23,8 +23,11 @@ export function ProductCard({ product, whatsapp }: { product: Product; whatsapp:
   return (
     // `interactive={false}`: la grilla muestra varias tarjetas a la vez, y con
     // el modo interactivo cada una montaría su propio requestAnimationFrame.
+    // El hover (levantar + sombra) va en el panel de afuera, no en el <a>:
+    // adentro el `overflow-hidden` del panel recortaba la sombra y el efecto
+    // se perdía. `rounded-[18px]` acompaña para que la sombra siga la forma.
     <BorderBeamPanel
-      className="h-full"
+      className="h-full rounded-[18px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-24px_rgba(23,34,15,0.55)]"
       beams={1}
       thickness={1}
       radius={18}
@@ -40,7 +43,7 @@ export function ProductCard({ product, whatsapp }: { product: Product; whatsapp:
         rel="noopener noreferrer"
         // h-full: en una grilla, CSS Grid estira la celda a la altura de la
         // fila (la más alta), pero sin esto el <a> no la ocupa.
-        className="group bg-card flex h-full flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-0.5"
+        className="group bg-card flex h-full flex-col overflow-hidden"
       >
         {/* RANURA RESERVADA para la fotografía del producto.
           Sustituir por <Image fill className="object-cover" />. */}

@@ -10,8 +10,11 @@ export function ProductCard({ product }: { product: ProductListItem }) {
     // `interactive={false}`: en una grilla hay ocho o más tarjetas a la vez, y
     // con el modo interactivo cada una montaría su propio bucle de
     // requestAnimationFrame. Acá la vuelta la lleva una animación CSS.
+    // El hover (levantar + sombra) va en el panel de afuera, no en el <Link>:
+    // adentro el `overflow-hidden` del panel recortaba la sombra y el efecto
+    // se perdía. `rounded-[18px]` acompaña para que la sombra siga la forma.
     <BorderBeamPanel
-      className="h-full"
+      className="h-full rounded-[18px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-24px_rgba(23,34,15,0.55)]"
       beams={1}
       thickness={1}
       radius={18}
@@ -23,7 +26,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
     >
       <Link
         href={`/producto/${product.slug}`}
-        className="group bg-card flex h-full flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-0.5"
+        className="group bg-card flex h-full flex-col overflow-hidden"
       >
         <div className="relative aspect-square overflow-hidden">
           {product.primaryImage ? (

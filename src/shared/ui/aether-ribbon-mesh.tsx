@@ -220,10 +220,18 @@ export function AetherRibbonMesh({
       frame = requestAnimationFrame(loop);
     };
 
+    // Los eventos se escuchan en `window`, no en el elemento padre: como
+    // fondo a pantalla completa el canvas va detrás de todo y con
+    // `pointer-events: none`, así que nunca recibiría el puntero. Las
+    // coordenadas se calculan igual contra el rectángulo del canvas, y se
+    // acotan para que un puntero muy lejos no dispare un desvío enorme.
+    const clamp = (value: number) => Math.max(-0.3, Math.min(1.3, value));
+
     const onPointerMove = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
-      pointer.tx = (event.clientX - rect.left) / rect.width;
-      pointer.ty = (event.clientY - rect.top) / rect.height;
+      if (rect.width === 0 || rect.height === 0) return;
+      pointer.tx = clamp((event.clientX - rect.left) / rect.width);
+      pointer.ty = clamp((event.clientY - rect.top) / rect.height);
       pointer.active = true;
     };
 
@@ -235,9 +243,10 @@ export function AetherRibbonMesh({
 
     const onPointerDown = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
       shockwaves.push({
-        x: (event.clientX - rect.left) / rect.width,
-        y: (event.clientY - rect.top) / rect.height,
+        x: clamp((event.clientX - rect.left) / rect.width),
+        y: clamp((event.clientY - rect.top) / rect.height),
         born: performance.now() / 1000,
       });
     };
@@ -254,10 +263,9 @@ export function AetherRibbonMesh({
       return () => resizeObserver.disconnect();
     }
 
-    const parent = canvas.parentElement;
-    parent?.addEventListener('pointermove', onPointerMove);
-    parent?.addEventListener('pointerleave', onPointerLeave);
-    parent?.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerdown', onPointerDown, { passive: true });
+    document.addEventListener('pointerleave', onPointerLeave);
 
     const intersectionObserver = new IntersectionObserver((entries) => {
       const isVisible = entries[0]?.isIntersecting ?? true;
@@ -274,9 +282,9 @@ export function AetherRibbonMesh({
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-      parent?.removeEventListener('pointermove', onPointerMove);
-      parent?.removeEventListener('pointerleave', onPointerLeave);
-      parent?.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('pointerleave', onPointerLeave);
     };
   }, [colors, ribbons, opacity, mode]);
 
