@@ -96,13 +96,17 @@ export function ContactSection({ contact }: { contact: ContactSettingsInput }) {
             la superficie verde de la tarjeta (en verde se perdería) y el halo
             se proyecta sobre el fondo crema de la página (en blanco sería
             invisible). Cada uno contrasta contra lo que tiene detrás. */}
+        {/* Un solo haz y no dos: con dos luces opuestas, media vuelta deja
+            la tarjeta igual que al empezar y el giro deja de percibirse.
+            Con una sola, la luz recorre el contorno y se ve de dónde viene
+            y a dónde va. */}
         <BorderBeamPanel
-          beams={2}
+          beams={1}
           thickness={2}
           radius={28}
           glow
-          speed={7}
-          spread={45}
+          speed={5}
+          spread={26}
           color="#ffffff"
           glowColor="var(--whatsapp)"
           surface="var(--whatsapp)"

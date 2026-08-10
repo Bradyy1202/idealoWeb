@@ -204,7 +204,12 @@
 @property --beam-angle {
   syntax: '<angle>';
   initial-value: 0deg;
-  inherits: false;
+  /* `inherits: true` es imprescindible: el ángulo se fija UNA vez en el
+     contenedor del panel y las tres capas que lo usan (haz, halo ancho y
+     núcleo del halo) lo heredan. Con `false` solo se movía la capa donde se
+     escribía la variable y el resto quedaba clavado en 0deg —arriba—, que
+     era justo lo que hacía que el resplandor no pareciera girar. */
+  inherits: true;
 }
 
 @keyframes border-beam-spin {

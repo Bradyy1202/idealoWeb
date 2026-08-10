@@ -76,8 +76,10 @@ export function BorderBeamPanel({
   spread = 22,
   border = 'var(--border)',
 }: BorderBeamPanelProps) {
-  const beamRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
+  // Una sola referencia, al contenedor: el ángulo se escribe ahí y las tres
+  // capas (haz, halo ancho, núcleo del halo) lo heredan. Escribirlo en cada
+  // capa por separado dejaba fuera a las que no tenían referencia.
+  const rootRef = useRef<HTMLDivElement>(null);
   const isHoveredRef = useRef(false);
 
   useEffect(() => {
@@ -100,9 +102,7 @@ export function BorderBeamPanel({
       velocity += (target - velocity) * Math.min(delta * 4, 1);
       angle = (angle + velocity * delta) % 360;
 
-      const value = `${angle}deg`;
-      beamRef.current?.style.setProperty('--beam-angle', value);
-      glowRef.current?.style.setProperty('--beam-angle', value);
+      rootRef.current?.style.setProperty('--beam-angle', `${angle}deg`);
 
       frame = requestAnimationFrame(tick);
     };
@@ -128,17 +128,21 @@ export function BorderBeamPanel({
     return `conic-gradient(from var(--beam-angle, 0deg), ${stops.join(', ')})`;
   };
 
-  const durationVar = interactive ? {} : ({ '--beam-duration': `${speed}s` } as CSSProperties);
-  const beamStyle: CSSProperties = { background: gradientFor(color), ...durationVar };
-  const glowStyle: CSSProperties = {
-    background: gradientFor(glowColor ?? color),
-    ...durationVar,
-  };
-  const beamClass = cn('absolute inset-0', !interactive && 'border-beam-spin');
+  const beamStyle: CSSProperties = { background: gradientFor(color) };
+  const glowStyle: CSSProperties = { background: gradientFor(glowColor ?? color) };
+  const beamClass = 'absolute inset-0';
+  // La animación CSS también va en el contenedor, no en cada capa: así las
+  // tres comparten exactamente el mismo ángulo en cada instante en vez de
+  // correr tres animaciones que podrían desfasarse.
+  const rootStyle: CSSProperties = interactive
+    ? {}
+    : ({ '--beam-duration': `${speed}s` } as CSSProperties);
 
   return (
     <div
-      className={cn('relative', className)}
+      ref={rootRef}
+      style={rootStyle}
+      className={cn('relative', !interactive && 'border-beam-spin', className)}
       onMouseEnter={
         interactive
           ? () => {
@@ -155,24 +159,26 @@ export function BorderBeamPanel({
       }
     >
       {glow ? (
-        // Dos capas: una amplia y muy difusa que tiñe el aire alrededor, y
-        // otra ajustada y menos borrosa que le da el núcleo brillante. Con
-        // una sola capa el resplandor quedaba casi todo tapado por la propia
-        // tarjeta —el desenfoque caía dentro del panel, no fuera— y desde
-        // afuera no se veía nada.
+        // Dos capas: un halo ancho que tiñe el aire alrededor, y un núcleo
+        // ajustado y poco borroso que es el que hace visible DÓNDE está la
+        // luz en cada momento.
+        //
+        // El núcleo lleva poco desenfoque a propósito. Con desenfoques muy
+        // grandes (blur-3xl) el arco se reparte por todo el contorno y el
+        // resultado se lee como un resplandor uniforme y quieto: la luz sí
+        // giraba, pero el desenfoque borraba su posición y no se notaba.
         <>
           <div
-            ref={glowRef}
             aria-hidden
-            className="pointer-events-none absolute -inset-10 -z-10 overflow-hidden blur-3xl"
-            style={{ borderRadius: radius + 40 }}
+            className="pointer-events-none absolute -inset-8 -z-10 overflow-hidden opacity-70 blur-2xl"
+            style={{ borderRadius: radius + 32 }}
           >
             <div className={beamClass} style={glowStyle} />
           </div>
           <div
             aria-hidden
-            className="pointer-events-none absolute -inset-4 -z-10 overflow-hidden opacity-90 blur-lg"
-            style={{ borderRadius: radius + 16 }}
+            className="pointer-events-none absolute -inset-3 -z-10 overflow-hidden blur-md"
+            style={{ borderRadius: radius + 12 }}
           >
             <div className={beamClass} style={glowStyle} />
           </div>
@@ -190,7 +196,7 @@ export function BorderBeamPanel({
           className="pointer-events-none absolute inset-0"
           style={{ borderRadius: radius, border: `${thickness}px solid ${border}` }}
         />
-        <div ref={beamRef} aria-hidden className={beamClass} style={beamStyle} />
+        <div aria-hidden className={beamClass} style={beamStyle} />
 
         <div
           className="relative h-full w-full overflow-hidden"
